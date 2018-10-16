@@ -184,13 +184,13 @@ reshape存在一个接受vector右值的版本，利用vector原有的内存空�
 ```c++
 	auto fun = [](int i, double f)
 	{
-		return i * f;
+		return i / f;
 	};
-	
-	tensor<int,2> ts_int = reshape(std::vector<int>(100, 10), 20, 5);
-	std::vector<std::array<double, 5>> vt_double(20, std::array<double, 5>{1.5, 2.5, 3.5, 4.5, 5.5});
 
-	tensor<double,2> rst = map_function(fun, ts_int, vt_double); 
+	tensor<int, 2> ts_int = reshape(std::vector<int>(100, 10), 20, 5);
+	tensor<double, 2> ts_double = reshape(std::vector<double>(100, 1.5), 20, 5);
+
+	tensor<double, 2> rst = map_function(fun, ts_int, ts_double);
 ```
 
 <br><br>
@@ -253,6 +253,21 @@ reshape存在一个接受vector右值的版本，利用vector原有的内存空�
 ### * dot(ptr,ptr)
 
 对一维或二维对象进行点乘运算的函数，一维对象（即内积）要求尺寸一致，二维对象（即矩阵乘法）要求前一操作数的第一个维度与后一操作数的第二个维度尺寸一致，不一致的情况会抛出异常。
+
+<br><br>
+
+### * element_case<type>(ptr)
+
+对数组中每一个元素调用static_cast<type>，结果保存在新的数组中。
+	
+范列：
+
+```c++
+	tensor<int, 2> ts_int(10, 10);
+
+	tensor<double, 2> ts_double= element_cast<double>(ts_int);
+```
+
 
 <br><br><br>
 
