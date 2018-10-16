@@ -1,6 +1,6 @@
 # bear
 将任意连续内存对象抽象成多位数组的C++库
-
+<br><br>
 
 
 ## 基本用法
@@ -46,7 +46,7 @@ int main()
 	
 	
 
-## 多维容器
+#### 多维容器
 
 tensor.h中定义了持有自己内存空间的多维容器，可以直接创建，也可以通过vector组合一个类指针得到，本身也可以拆解成指针和vector：
 
@@ -61,13 +61,13 @@ tensor.h中定义了持有自己内存空间的多维容器，可以直接创建
 	std::pair<std::vector<int>, tensor_ptr<int, 3>> pr = t1.decompose();
 ```
 
-image<type,channel>与其类似，对应的类指针对象为image_ptr<type,channel>
+image<type,channel>与其类似，对应的类指针对象为image_ptr<type,channel>，在"image.h"中定义。
 
-
+<br><br><br>
 
 ## 常用的方法
 
-库中定义有一些常用的处理多维对象的方法：
+库中定义有一些常用的处理多维对象的方法。
 
 ### * clip(ptr,start,end)
 ### * clip_at<n>(ptr,start,end)
@@ -81,15 +81,15 @@ image<type,channel>与其类似，对应的类指针对象为image_ptr<type,chan
 	tensor<int,2> img(20,20);
 	clip_at<1>(img,0,10).fill(1); //将容器第二个维度前一半的元素设为1
 ```
-
+<br><br>
 
 ### * reshape(ptr,sizes...)
 
-取得改变维度及各维度尺寸的类指针的函数，要求变形后与变形前对象包括的元素总数目一致，不一致会抛出异常，另外如果要做变形处理的内存区域不连续的话（比如执行clip()后取得的对象），reshape()有失败的可能，元素的内存分布不满足需要变化到的尺寸的连续性要求的话，reshape()会返回空对象。
+取得改变维度及各维度尺寸的类指针的函数，要求变形后与变形前对象包括的元素总数目一致，不一致会抛出异常，另外如果要做变形处理的内存区域不连续（比如执行clip()后取得的对象）并且元素的内存分布不满足需要变化到的尺寸的连续性要求的话，reshape()有失败的可能，失败时返回回空对象。
 
 reshape存在一个接受vector右值的版本，利用vector原有的内存空间构建一个tenser容器。
 
-
+<br><br>
 
 ### * tensor_ptr::plan()
 
@@ -102,7 +102,7 @@ reshape存在一个接受vector右值的版本，利用vector原有的内存空�
 	tensor_ptr<int,1> ary = cube.plan();
 	std::for_each(ary.begin(),ary.end(),[]( int i ) { std::cout << i; }); //顺序遍历cube中所有元素
 ```
-
+<br><br>
 
 ### * shrink(ptr)
 
@@ -114,7 +114,7 @@ reshape存在一个接受vector右值的版本，利用vector原有的内存空�
 	tensor<int,3> cube(20,20,20);
 	tensor_ptr<int,3> p = shrink(cube); //p的尺寸为（1 ，1 ，8000）
 ```
-
+<br><br>
 
 ### * size(ptr)
 
@@ -127,7 +127,7 @@ reshape存在一个接受vector右值的版本，利用vector原有的内存空�
 	std::array<std::size_t,3> sz = size(cube);
 	tensor<float,3> cube_float(sz); //创建一个与前一容器尺寸相同的容器。
 ```
-
+<br><br>
 
 ### * to_ptr(container)
 
@@ -137,21 +137,39 @@ reshape存在一个接受vector右值的版本，利用vector原有的内存空�
 
 ```c++
 	std::vector<int> v{1,2,3,4,5};
-	to_ptr(v).for_each([](int i){std::cout << i; });
+	to_ptr(v).for_each([](int i){std::cout << i; }); //使用相应的指针对象遍历vector
 ```
-
+<br><br>
 
 ### * tensor_ptr::fill(element)
 ### * tensor_ptr::for_each(functor)
 
 如之前的范列所示，这两个函数对每个元素进行填充数值或其他相应的操作。
 
+<br><br><br>
 
 
 
+## 进阶函数
+
+"ptr_algorism.h"中定义有一些更复杂的操作数组的函数。
+
+### * zip_to<n>(functor,ptr ...)
+
+传入一个函数对象，和一系列多维数组对象，遍历前n个维度，将每个数组的每一元素做为参数调用函数对象，要求数组的前n个维度尺寸一致。
+
+范列：
 
 
+```c++
+	std::list<std::array<int, 10>> lst(20);
+	tensor<char, 3> ts = reshape(vector<char>(1000,100),20, 10, 5);
 
+	zip_to<2>([](int &lv, tensor_ptr<char, 1> tv)
+	{
+		lv = sum(tv); //对ts的最后一维求总和，结果保存在lst中。
 
+	}, lst, ts); //lst 中的所有元素赋值为 500
+```
 
 
