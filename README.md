@@ -38,14 +38,6 @@ int main()
 tensor.h中定义了持有自己内存空间的多维容器，可以直接创建，也可以通过vector组合一个类指针得到，本身也可以拆解成指针和vector：
 
 ```c++
-
-#include "container_pointer.h"
-#include "tensor"
-
-using namespace bear;
-
-int main()
-{
 	//直接创建
 	tensor<int, 3> t1(3,4,5);
 
@@ -53,7 +45,5 @@ int main()
 	tensor<int, 3> t2 = reshape(vector<int>(60, 0), 3, 4, 5);
 
 	//拆解为vector
-	std::pair<std::vector<int>, tensor<int, 3>> pr = t1.decompose();
-}
-
+	std::pair<std::vector<int>, tensor_ptr<int, 3>> pr = t1.decompose();
 ```
