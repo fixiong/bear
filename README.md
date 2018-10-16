@@ -39,9 +39,9 @@ int main()
 
 基础的类指针类型包括：
 
-* array_ptr<type> （tensor_ptr<type,1>别名）
+* array_ptr<type> （别名tensor_ptr<type,1>）
 * tensor_ptr<type,n>
-* basic_string_ptr<type,char_traits> （array_ptr的特化版本，支持部分std::string方法）
+* basic_string_ptr<type,char_traits> （array_ptr的特化版本，支持部分std::string的对应方法）
 * image_ptr<type,channel> （tensor_ptr<type,2>的特化版本，用于支持一些图像操作，于"image.h"中定义）
 	
 	
@@ -131,7 +131,7 @@ reshape存在一个接受vector右值的版本，利用vector原有的内存空�
 
 ### * to_ptr(container)
 
-构建指向支持的容器的类指针对象，作用到指针对象的话，则返回指针本身的引用。
+取得指向支持的容器的类指针对象，作用到指针对象的话，则返回指针对象本身的引用。
 
 范列：
 
@@ -156,7 +156,7 @@ reshape存在一个接受vector右值的版本，利用vector原有的内存空�
 
 ### * zip_to<n>(functor,ptr ...)
 
-传入一个函数对象，和一系列多维数组对象，遍历前n个维度，将每个数组的每一元素做为参数调用函数对象，要求数组的前n个维度尺寸一致。
+传入一个函数对象，和一系列多维数组对象，遍历前n个维度，将每个数组指定维度的每一元素做为参数调用函数对象，要求数组的前n个维度尺寸一致。（只要是可以多维迭代的对象都可以传入，不一定是多维数组）
 
 范列：
 
@@ -167,9 +167,97 @@ reshape存在一个接受vector右值的版本，利用vector原有的内存空�
 
 	zip_to<2>([](int &lv, tensor_ptr<char, 1> tv)
 	{
-		lv = sum(tv); //对ts的最后一维求总和，结果保存在lst中。
+		lv = sum(tv); //对ts的最后一维求总和，结果保存在lst中
 
 	}, lst, ts); //lst 中的所有元素赋值为 500
 ```
+
+<br><br>
+
+### * map_function(functor,ptr ...)
+
+传入一个以后面参数元素类型作为参数的函数对象，遍历每个元素，调用传入的函数对象，结果（如果返回不为void）存为一个同样尺寸的数组，参数需要是支持的连续内存序列容器或类指针，要求参数尺寸一致。
+
+范列：
+
+
+```c++
+	auto fun = [](int i, double f)
+	{
+		return i * f;
+	};
+	
+	tensor<int,2> ts_int = reshape(std::vector<int>(100, 10), 20, 5);
+	std::vector<std::array<double, 5>> vt_double(20, std::array<double, 5>{1.5, 2.5, 3.5, 4.5, 5.5});
+
+	tensor<double,2> rst = map_function(fun, ts_int, vt_double); 
+```
+
+<br><br>
+
+### * compare(arr1,arr2)
+
+按字符串顺序比较两个多维数组，返回-1，0，1，类似strcmp，不要求数组的尺寸相同，但需要数组的维数一致，可以用来对任意形状的数组进行排序。
+
+<br><br>
+
+### * for_each(ptr,fun)
+### * fill(ptr,value)
+
+和成员函数版本的对应函数功能相同，增加了对std::array<type,size>的支持。
+
+范列：
+
+```c++
+	tensor<std::array<int, 5>, 2> ts(10,10);
+
+	fill(ts, 50); //将ts中每个std::array的每个元素设为50
+	to_ptr(ts).fill(std::array<int, 5>{1, 2, 3, 4, 5}); //将ts中每个std::array设为1,2,3,4,5
+```
+
+<br><br>
+
+### * split(const_string_ptr,token) （basic_string_ptr独有）
+
+按分割符拆分字符串，返回装有指向字符串每个分隔部分的类指针vector（std::vector<const_string_ptr>类型），整个操作不需要拷贝字符串。
+
+
+<br><br><br>
+
+### 数值函数
+
+"ptr_numeric.h"中定义有一些对数组进行数值操作的函数
+
+##### 重定义操作符：
+
+重定义了+,-,* 等数值操作符号，可以直接作用到数组上面，包括数组与数组，数组与标量的四则运算，%运算，| & ^位运算，及其对应的带等号赋值版本。
+
+数组与数组之间的运算要求维度和尺寸一致。
+
+范列：
+
+```c++
+	tensor<float, 2> img1(50, 50);
+	tensor<float, 2> img2(50, 50);
+	tensor<float, 2> alpha(50, 50);
+	
+	.......
+	
+	img1 *= alpha;
+
+	tensor<float, 2> img3 = img1 + img2 * (1.0f - alpha); //按alpha混合img1与img2
+```
+
+<br><br>
+
+### * dot(ptr,ptr)
+
+对一维或二维对象进行点乘运算的函数，一维对象（即内积）要求尺寸一致，二维对象（即矩阵乘法）要求前一操作数的第一个维度与后一操作数的第二个维度尺寸一致，不一致的情况会抛出异常。
+
+<br><br><br>
+
+### 其他计划中的部分
+
+包括tensor,image的内存对齐版本aligned_tensor,aligned_image,进行卷积运算的conv_1d(),conv2d()函数，对数组某一维求和，方差等的统计函数，正在编写中
 
 
