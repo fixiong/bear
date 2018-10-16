@@ -5,6 +5,19 @@
 
 namespace bear
 {
+	
+	template<typename _Result, typename ... _Types >
+	class functor;
+
+	template<typename _Fun>
+	struct __check_fun
+	{
+		using type = int;
+	};
+
+	template<typename _Result, typename ... _Types >
+	struct __check_fun<functor<_Result, _Types ...> > {};
+
 	template<typename _Result, typename ... _Types >
 	class functor
 	{
@@ -59,16 +72,6 @@ namespace bear
 			return _ctn;
 		}
 
-
-		template<typename _Fun>
-		struct check_fun
-		{
-			using type = int;
-		};
-
-		template<>
-		struct check_fun<functor> {};
-
 	public:
 		_Result operator()(_Types... _args) const //won't work!
 		{
@@ -81,7 +84,7 @@ namespace bear
 		}
 
 		template<typename R_Fun>
-		functor(R_Fun &&_fun, typename check_fun<typename std::decay<R_Fun>::type>::type _c = 0)
+		functor(R_Fun &&_fun, typename __check_fun<typename std::decay<R_Fun>::type>::type _c = 0)
 		{
 			using _Fun = typename std::decay<R_Fun>::type;
 			static_assert(!std::is_same<_Fun, functor>::value, "recursive create");

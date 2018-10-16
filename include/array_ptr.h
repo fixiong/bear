@@ -43,8 +43,8 @@ namespace bear
 			_pointer(_ctn.empty() ? 0 : &_ctn[0]),
 			_size(_ctn.size()) {}
 
-		template<typename _Elm, size_t Size>
-		array_ptr(const std::array<_Elm, Size> & _ctn) :
+		template<typename _Elm_, size_t Size>
+		array_ptr(const std::array<_Elm_, Size> & _ctn) :
 			_pointer(_ctn.empty() ? 0 : &_ctn[0]),
 			_size(_ctn.size()) {}
 
@@ -58,8 +58,8 @@ namespace bear
 			_pointer(_ctn.empty() ? 0 : &_ctn[0]),
 			_size(_ctn.size()) {}
 
-		template<typename _Elm, size_t Size>
-		array_ptr(std::array<_Elm, Size> & _ctn) :
+		template<typename _Elm_, size_t Size>
+		array_ptr(std::array<_Elm_, Size> & _ctn) :
 			_pointer(_ctn.empty() ? 0 : &_ctn[0]),
 			_size(_ctn.size()) {}
 
@@ -279,8 +279,8 @@ namespace bear
 	}
 
 
-	template<typename _Stm, typename _Elm>
-	inline _Stm && operator >> (_Stm && stm, array_ptr<_Elm> arr)
+	template<typename _Stm, typename _Elm_>
+	inline _Stm && operator >> (_Stm && stm, array_ptr<_Elm_> arr)
 	{
 		auto e = arr.end();
 		for (auto b = arr.begin(); b < e; ++b)
@@ -291,8 +291,8 @@ namespace bear
 	}
 
 
-	template<typename _Stm, typename _Elm>
-	inline _Stm && operator << (_Stm && stm, array_ptr<_Elm> arr)
+	template<typename _Stm, typename _Elm_>
+	inline _Stm && operator << (_Stm && stm, array_ptr<_Elm_> arr)
 	{
 		std::forward<_Stm>(stm) << '{' << arr[0];
 		auto e = arr.end();

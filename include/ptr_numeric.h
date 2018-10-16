@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "ptr_algorism.h"
 #include "tensor.h"

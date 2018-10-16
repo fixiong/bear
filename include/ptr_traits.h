@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "ptr_types.h"
 
@@ -44,7 +44,7 @@ namespace bear
 		const std::tuple<_T ...> &arg,
 		std::tuple<_Idx ...>)
 	{
-		std::forward<_Fn>(fn)(*get<_Idx::value>(arg) ...);
+		std::forward<_Fn>(fn)(*std::get<_Idx::value>(arg) ...);
 	}
 
 
@@ -53,7 +53,7 @@ namespace bear
 		_Fn && fn,
 		const _Tp &arg)
 	{
-		__unpack_arg(std::forward<_Fn>(fn), arg, make_type_index<std::tuple_size<_Tp>::value>);
+		__unpack_arg(std::forward<_Fn>(fn), arg, make_type_index<std::tuple_size<_Tp>::value>());
 	}
 
 

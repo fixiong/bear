@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "array_ptr.h"
 #include "string_ptr.h"

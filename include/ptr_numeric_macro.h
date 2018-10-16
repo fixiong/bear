@@ -1,4 +1,4 @@
-﻿
+
 namespace bear
 {
 	template<typename _Bl, typename _Br>

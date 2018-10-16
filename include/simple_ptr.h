@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <atomic>
 #include <memory>
@@ -329,6 +329,9 @@ namespace bear
 			data(std::forward<_Types>(_Args)...) {}
 	};
 
+	using unique_any = unique_rls_ptr<any_container>;
+	using shared_any = shared_rls_ptr<any_container>;
+
 	template<typename T, class... _Types>
 	inline auto any_container::make_unique(_Types&&... _Args)
 	{
@@ -342,7 +345,4 @@ namespace bear
 		auto ret = new __real_container<T>(std::forward<_Types>(_Args)...);
 		return std::make_pair(shared_any(ret), ret->get());
 	}
-
-	using unique_any = unique_rls_ptr<any_container>;
-	using shared_any = shared_rls_ptr<any_container>;
 }

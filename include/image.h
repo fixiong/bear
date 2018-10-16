@@ -1,4 +1,4 @@
-﻿#ifndef _IMAGE_H
+#ifndef _IMAGE_H
 #define _IMAGE_H
 
 #include "container_pointer.h"
