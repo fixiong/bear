@@ -104,7 +104,7 @@ namespace bear
 		}
 
 		base_image_ptr(
-			typename elm_pointer _data,
+			elm_pointer _data,
 			size_t _width_step,
 			size_t _width,
 			size_t _height) :
@@ -131,12 +131,12 @@ namespace bear
 
 		size_t width() const
 		{
-			return this->size_at<1>();
+			return this->begin()->size();
 		}
 
 		size_t height() const
 		{
-			return this->size_at<0>();
+			return this->size();
 		}
 
 		friend const base_image_ptr & to_ptr(const base_image_ptr & p)
@@ -179,7 +179,7 @@ namespace bear
 
 		image_ptr() {}
 
-		explicit image_ptr(const typename tensor_type &oth) :base(oth) {}
+		explicit image_ptr(const tensor_type &oth) :base(oth) {}
 
 		template<typename _Elm_> 
 		image_ptr(const image_ptr<_Elm_,_Ch> &oth) :base(oth)

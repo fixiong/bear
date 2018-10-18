@@ -87,38 +87,6 @@ namespace bear
 
 
 
-	template<size_t i>
-	struct _tensor_get
-	{
-		template<typename _T>
-		static auto _get_size(const _T & t)
-		{
-			return _tensor_get<i - 1>::_get_size(t.front());
-		}
-
-
-		template<typename _T>
-		static auto _get_step(const _T & t)
-		{
-			return _tensor_get<i - 1>::_get_step(t.front());
-		}
-	};
-
-	template<>
-	struct _tensor_get<0>
-	{
-		template<typename _T>
-		static auto _get_size(const _T & t)
-		{
-			return t.size();
-		}
-
-		template<typename _T>
-		static auto _get_step(const _T & t)
-		{
-			return t.move_step();
-		}
-	};
 
 	template<typename _Base>
 	class base_tensor_ptr
@@ -186,12 +154,6 @@ namespace bear
 				"element type not compatible!");
 		}
 
-		template<size_t _Dim>
-		size_t size_at() const
-		{
-			static_assert(_Dim < dim, "exceeded max dim!");
-			return _tensor_get<_Dim>::_get_size(*this);
-		}
 
 		template<size_t _Dim>
 		difference_type move_step_at() const
@@ -346,6 +308,7 @@ namespace bear
 			}
 		}
 	};
+
 
 	template<size_t _Dim>
 	struct _tensor_clip_at

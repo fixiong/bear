@@ -33,7 +33,7 @@ namespace bear
 		return zip_check_size(size[0], ts ...);
 	}
 
-	template<unsigned int _Lv, typename ... _Ts>
+	template<size_t _Lv, typename ... _Ts>
 	inline bool zip_check_size(
 		std::array<size_t, _Lv> &size,
 		const _Ts & ... ts)
@@ -89,7 +89,7 @@ namespace bear
 	}
 
 
-	template<unsigned int _Lv, typename _Fn, typename ... _Ts>
+	template<size_t _Lv, typename _Fn, typename ... _Ts>
 	inline void zip(
 		_Fn && fn,
 		const std::array<size_t, _Lv> &size,
@@ -105,7 +105,7 @@ namespace bear
 		}
 	}
 
-	template<unsigned int _Lv, typename _Fn, typename ... _Ts>
+	template<size_t _Lv, typename _Fn, typename ... _Ts>
 	inline void zip_to(
 		_Fn && fn,
 		_Ts && ... ts)
@@ -153,7 +153,7 @@ namespace bear
 	}
 
 
-	template<unsigned int _Lv, typename _Fn, typename ... _Ts>
+	template<size_t _Lv, typename _Fn, typename ... _Ts>
 	inline void zip_r(
 		_Fn && fn,
 		const std::array<size_t, _Lv> &size,
@@ -169,7 +169,7 @@ namespace bear
 		}
 	}
 
-	template<unsigned int _Lv, typename _Fn, typename ... _Ts>
+	template<size_t _Lv, typename _Fn, typename ... _Ts>
 	inline void zip_r_to(
 		_Fn && fn,
 		_Ts && ... ts)
@@ -433,5 +433,52 @@ namespace bear
 		}
 
 		return ret;
+	}
+
+
+	template<size_t i>
+	struct _tensor_get
+	{
+		template<typename _T>
+		static auto _get_size(const _T & t)
+		{
+			return _tensor_get<i - 1>::_get_size(t.front());
+		}
+
+
+		template<typename _T>
+		static auto _get_step(const _T & t)
+		{
+			return _tensor_get<i - 1>::_get_step(t.front());
+		}
+	};
+
+	template<>
+	struct _tensor_get<0>
+	{
+		template<typename _T>
+		static auto _get_size(const _T & t)
+		{
+			return t.size();
+		}
+
+		template<typename _T>
+		static auto _get_step(const _T & t)
+		{
+			return t.move_step();
+		}
+	};
+
+
+	template<size_t _Dim, typename _T>
+	size_t size_at(_T &&ts)
+	{
+		return _tensor_get<_Dim>::_get_size(ts);
+	}
+
+	template<size_t _Dim, typename _T>
+	size_t move_step_at(_T &&ts)
+	{
+		return _tensor_get<_Dim>::_get_step(ts);
 	}
 }
