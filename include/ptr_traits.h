@@ -16,10 +16,10 @@ namespace bear
 	};
 
 	template<typename ... _Ts>
-	struct tuple_append {};
+	struct tuple_push_back {};
 
 	template<typename ... _Ts, typename _T>
-	struct tuple_append<std::tuple<_Ts ...>, _T>
+	struct tuple_push_back<std::tuple<_Ts ...>, _T>
 	{
 		using type = std::tuple<_Ts ..., _T>;
 	};
@@ -27,7 +27,7 @@ namespace bear
 	template<unsigned int _sz>
 	struct make_type_index
 	{
-		using type = typename tuple_append<
+		using type = typename tuple_push_back<
 			typename make_type_index<_sz - 1>::type,
 			std::integral_constant<size_t,_sz - 1>>::type;
 	};
@@ -55,6 +55,27 @@ namespace bear
 	{
 		__unpack_arg(std::forward<_Fn>(fn), arg, make_type_index<std::tuple_size<_Tp>::value>());
 	}
+
+	template<size_t I, typename _T1, typename ... _T>
+	struct pack_get_type
+	{
+		using type = typename pack_get_type<I - 1, _T ...>::type;
+	};
+
+
+	template<typename _T1, typename ... _T>
+	struct pack_get_type<0,_T1,_T ...>
+	{
+		using type = _T1;
+	};
+
+
+	template<typename _T1, typename ... _T>
+	struct pack_get_size : public std::integral_constant<size_t, pack_get_size<_T ...>::value + 1> {};
+
+
+	template<typename _T1>
+	struct pack_get_size<_T1> :public std::integral_constant<size_t,1> {};
 
 
 	template<typename _T, size_t _I>

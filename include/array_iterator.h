@@ -70,7 +70,7 @@ namespace bear
 			return &_value;
 		}
 
-		value_type operator [] (int i) const
+		value_type operator [] (difference_type i) const
 		{
 			auto ret = _value;
 			ret.move_pointer(i * _step);

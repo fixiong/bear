@@ -91,7 +91,7 @@ namespace bear
 		basic_string_ptr(const array_ptr<_Oe_> &oth) :base(oth)
 		{
 			static_assert(
-				is_memory_compatible<typename base::elm_type, typename _Oe_::elm_type>::value,
+				is_memory_compatible<typename base::elm_type, _Oe_>::value,
 				"element type not compatible!");
 		}
 
