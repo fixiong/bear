@@ -92,6 +92,7 @@ namespace bear
 
 		bool validate() const
 		{
+			if (_ptr.empty())return true;
 			if (_ptr.size() < 4)return false;
 			size_type data_start = _get_size(0);
 
@@ -118,6 +119,7 @@ namespace bear
 
 		size_type size() const
 		{
+			if (_ptr.empty())return 0;
 			return _get_size(0) / sizeof(size_type);
 		}
 
