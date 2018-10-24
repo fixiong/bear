@@ -71,18 +71,26 @@ namespace bear
 
 
 	template<typename _T1, typename ... _T>
-	struct pack_get_size : public std::integral_constant<size_t, pack_get_size<_T ...>::value + 1> {};
+	struct __pack_get_size : public std::integral_constant<size_t, __pack_get_size<_T ...>::value + 1> {};
 
 
 	template<typename _T1>
-	struct pack_get_size<_T1> :public std::integral_constant<size_t,1> {};
+	struct __pack_get_size<_T1> :public std::integral_constant<size_t,1> {};
+
+
+	template<typename ... _T>
+	struct pack_get_size :public __pack_get_size<_T ...> {};
+
+
+	template<>
+	struct pack_get_size<> :public std::integral_constant<size_t, 0> {};
 
 
 	template<typename _T1, size_t _Sz>
-	void __pack_to_array(const std::array<_T1, _Sz> & ret, size_t p) {}
+	void __pack_to_array(std::array<_T1, _Sz> & ret, size_t p) {}
 
-	template<typename _T1, size_t _Sz, typename ... _T>
-	void __pack_to_array(const std::array<_T1,_Sz> & ret, size_t p, _T1 v1, _T ... vs)
+	template<typename _T1, size_t _Sz, typename _T2, typename ... _T>
+	void __pack_to_array(std::array<_T1,_Sz> & ret, size_t p, _T2 v1, _T ... vs)
 	{
 		ret[p] = v1;
 		__pack_to_array(ret, p + 1, vs ...);
@@ -93,6 +101,7 @@ namespace bear
 	{
 		std::array<_T1, pack_get_size<_T ...>::value + 1> ret;
 		__pack_to_array(ret, 0, v1, vs ...);
+		return ret;
 	}
 
 

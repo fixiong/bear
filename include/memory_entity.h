@@ -51,35 +51,39 @@ namespace bear
 
 		basic_memory_entity(const ptr_type & ptr) : _ptr(ptr){}
 
-		template<typename ... _T>
-		static size_type total_size(_T ... sss)
+		constexpr static size_type index_size(size_t s)
 		{
-			auto ss = pack_to_array(sss ...);
-
-			return total_size(ss);
-		}
-
-		static size_type total_size(const_array_ptr<size_type> sizes)
-		{
-			auto s = sum(sizes);
-			return s + (size_type)sizes.size() * sizeof(size_type);
+			return (size_type)s * sizeof(size_type);
 		}
 
 		template<typename ... _T>
-		void init(_T ... sss)
+		static size_type allocate_size(size_t s1, _T ... sss)
 		{
-			auto ss = pack_to_array(sss ...);
+			auto ss = pack_to_array((size_type)s1, (size_type)sss ...);
+
+			return allocate_size(ss);
+		}
+
+		static size_type allocate_size(const_array_ptr<size_type> sizes)
+		{
+			return sum(sizes) + index_size(sizes.size());
+		}
+
+		template<typename ... _T>
+		void init(size_t s1, _T ... sss) const
+		{
+			auto ss = pack_to_array((size_type)s1, (size_type)sss ...);
 
 			init(ss);
 		}
 		
-		void init(const_array_ptr<size_type> sizes)
+		void init(const_array_ptr<size_type> sizes) const
 		{
-			_get_size(0) = sizes.size() * sizeof(size_type);
+			_get_size(0) = (size_type)sizes.size() * sizeof(size_type);
 
 			for (size_type i = 1; i < (size_type)sizes.size(); ++i)
 			{
-				_get_size(i) = _get_size(i - 1) + size[i - 1];
+				_get_size(i) = _get_size(i - 1) + sizes[i - 1];
 			}
 
 			if (sizes.back() != back().size())
@@ -135,7 +139,7 @@ namespace bear
 
 		class iterator :public std::iterator<std::random_access_iterator_tag, difference_type>
 		{
-			basic_memory_entity &_self;
+			basic_memory_entity _self;
 			//ptr_type _current;
 			difference_type _pos;
 		public:
