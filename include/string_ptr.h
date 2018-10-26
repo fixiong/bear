@@ -16,6 +16,10 @@ namespace bear
 
 		using normal_self = basic_string_ptr<typename std::remove_const<_Elm>::type,_Trt>;
 		using const_self = basic_string_ptr<const _Elm,_Trt>;
+		using other_self = typename std::conditional<
+			std::is_const<_Elm>::value,
+			normal_self,
+			const_self>::type;
 
 	private:
 
@@ -173,6 +177,40 @@ namespace bear
 		{
 			return _cmp(&ls[0], ls.size(), &rs[0], rs.size()) <= 0;
 		}
+
+
+
+		bool operator == (const other_self &rs)
+		{
+			return !_cmp(&this->data(), this->size(), &rs[0], rs.size());
+		}
+
+		bool operator != (const other_self &rs)
+		{
+			return _cmp(&this->data(), this->size(), &rs[0], rs.size());
+		}
+
+		bool operator > (const other_self &rs)
+		{
+			return _cmp(&this->data(), this->size(), &rs[0], rs.size()) > 0;
+		}
+
+		bool operator < (const other_self &rs)
+		{
+			return _cmp(&this->data(), this->size(), &rs[0], rs.size()) < 0;
+		}
+
+		bool operator >= (const other_self &rs)
+		{
+			return _cmp(&this->data(), this->size(), &rs[0], rs.size()) >= 0;
+		}
+
+		bool operator <= (const other_self &rs)
+		{
+			return _cmp(&this->data(), this->size(), &rs[0], rs.size()) <= 0;
+		}
+
+
 
 
 

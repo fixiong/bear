@@ -117,6 +117,11 @@ namespace bear
 			return _ptr;
 		}
 
+		bool empty() const
+		{
+			return _ptr.empty();
+		}
+
 		size_type size() const
 		{
 			if (_ptr.empty())return 0;
@@ -205,14 +210,14 @@ namespace bear
 			friend iterator operator + (const iterator & lv, difference_type rv)
 			{
 				auto ret = lv;
-				ret._pos += lv;
+				ret._pos += rv;
 				return ret;
 			}
 
 			friend iterator operator - (const iterator & lv, difference_type rv)
 			{
 				auto ret = lv;
-				ret._pos -= lv;
+				ret._pos -= rv;
 				return ret;
 			}
 
