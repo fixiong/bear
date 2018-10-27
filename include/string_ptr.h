@@ -180,34 +180,34 @@ namespace bear
 
 
 
-		bool operator == (const other_self &rs)
+		bool operator == (const other_self &rs) const
 		{
-			return !_cmp(&this->data(), this->size(), &rs[0], rs.size());
+			return !_cmp(this->data(), this->size(), rs.data(), rs.size());
 		}
 
-		bool operator != (const other_self &rs)
+		bool operator != (const other_self &rs) const
 		{
-			return _cmp(&this->data(), this->size(), &rs[0], rs.size());
+			return _cmp(this->data(), this->size(), rs.data(), rs.size());
 		}
 
-		bool operator > (const other_self &rs)
+		bool operator > (const other_self &rs) const
 		{
-			return _cmp(&this->data(), this->size(), &rs[0], rs.size()) > 0;
+			return _cmp(this->data(), this->size(), rs.data(), rs.size()) > 0;
 		}
 
-		bool operator < (const other_self &rs)
+		bool operator < (const other_self &rs) const
 		{
-			return _cmp(&this->data(), this->size(), &rs[0], rs.size()) < 0;
+			return _cmp(this->data(), this->size(), rs.data(), rs.size()) < 0;
 		}
 
-		bool operator >= (const other_self &rs)
+		bool operator >= (const other_self &rs) const
 		{
-			return _cmp(&this->data(), this->size(), &rs[0], rs.size()) >= 0;
+			return _cmp(this->data(), this->size(), rs.data(), rs.size()) >= 0;
 		}
 
-		bool operator <= (const other_self &rs)
+		bool operator <= (const other_self &rs) const
 		{
-			return _cmp(&this->data(), this->size(), &rs[0], rs.size()) <= 0;
+			return _cmp(this->data(), this->size(), rs.data(), rs.size()) <= 0;
 		}
 
 
