@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "ptr_types.h"
+#include <algorithm>
 
 namespace bear
 {
