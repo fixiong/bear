@@ -155,13 +155,6 @@ namespace bear
 		}
 
 
-		template<size_t _Dim>
-		difference_type move_step_at() const
-		{
-			static_assert(_Dim < dim, "exceeded max dim!");
-			return _tensor_get<_Dim>::_get_step(*this);
-		}
-
 		size_t size() const
 		{
 			return _size;
@@ -598,9 +591,9 @@ namespace bear
 		auto e = arr.end();
 		for (auto b = arr.begin() + 1; b < e; ++b)
 		{
-			std::forward<_Stm>(stm) << ',' << endl << *b;
+			std::forward<_Stm>(stm) << ',' << std::endl << *b;
 		}
-		std::forward<_Stm>(stm) << '}' << endl;
+		std::forward<_Stm>(stm) << '}' << std::endl;
 		return std::forward<_Stm>(stm);
 	}
 }
