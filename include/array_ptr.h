@@ -154,11 +154,6 @@ namespace bear
 			return *(_pointer + _size - 1);
 		}
 
-		operator void *() const
-		{
-			return (void *)_pointer;
-		}
-
 		constexpr difference_type move_step() const
 		{
 			return sizeof(value_type);

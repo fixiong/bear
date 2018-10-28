@@ -37,11 +37,28 @@ namespace bear
 			_init(0, std::forward<_T>(arg) ...);
 		}
 
+		virtual ~bear_exception() {}
+
 		bear_exception() :_size(0), _type(0) {}
 
-		const_string_ptr what() const noexcept
+		virtual const_string_ptr what() const noexcept
 		{
 			return const_string_ptr(_what, _size);
+		}
+
+		virtual const_string_ptr type()
+		{
+			switch (_type)
+			{
+			case exception_type::pointer_outof_range:
+				return literal_u8("pointer outof range");
+			case exception_type::size_different:
+				return literal_u8("size different");
+			case exception_type::memory_not_continuous:
+				return literal_u8("memory not continuous");
+			default:
+				return literal_u8("unknown exception");
+			}
 		}
 
 		unsigned int error_number() const noexcept

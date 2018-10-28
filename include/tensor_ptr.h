@@ -218,11 +218,6 @@ namespace bear
 			return *(begin() + (_size - 1));
 		}
 
-		operator bool() const
-		{
-			return _pointer;
-		}
-
 		difference_type move_step() const
 		{
 			return _pointer.move_step();
@@ -577,7 +572,7 @@ namespace bear
 				"can't reshape a memory to a diffrernce size!");
 
 		auto ary = oth.plan();
-		if (ary)return _reshape(ary, sizes);
+		if (!ary.empty())return _reshape(ary, sizes);
 
 		return _reshape(_shrink(oth), sizes);
 	}

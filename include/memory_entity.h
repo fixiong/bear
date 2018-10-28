@@ -42,7 +42,7 @@ namespace bear
 
 		size_type &_get_size(size_type i) const
 		{
-			return cast_memory<size_type>(clip(_ptr, i * sizeof(size_type), sizeof(size_type)));
+			return cast_memory<size_type>(clip(_ptr, i * sizeof(size_type), (i + 1) * sizeof(size_type)));
 		}
 
 	public:
@@ -79,6 +79,7 @@ namespace bear
 		
 		void init(const_array_ptr<size_type> sizes) const
 		{
+			if (sizes.empty())return;
 			_get_size(0) = (size_type)sizes.size() * sizeof(size_type);
 
 			for (size_type i = 1; i < (size_type)sizes.size(); ++i)

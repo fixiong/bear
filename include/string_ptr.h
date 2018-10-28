@@ -394,7 +394,7 @@ namespace bear
 
 		auto pr = oth.split(c);
 
-		for (; pr.second; pr = pr.second.split(c))
+		for (; !pr.second.empty(); pr = pr.second.split(c))
 		{
 			ret.push_back(pr.first);
 		}
