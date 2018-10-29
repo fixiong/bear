@@ -179,7 +179,7 @@ namespace bear
 			iterator operator ++ (int)
 			{
 				auto ret = *this;
-				++pos;
+				++_pos;
 				return ret;
 			}
 
