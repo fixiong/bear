@@ -3,6 +3,7 @@
 #include "array_ptr.h"
 #include <string>
 #include <utility>
+#include <sstream>
 
 namespace bear
 {
@@ -104,13 +105,7 @@ namespace bear
 
 		basic_string_ptr(_Elm * _begin, size_t _size) :base(_begin, _size) {}
 
-		template<typename _Oe>
-		basic_string_ptr(_Oe * _cs) : base(_cs, _Trt::length(_cs))
-		{
-			static_assert(
-				is_memory_compatible<typename base::elm_type, _Oe>::value,
-				"element type not compatible!");
-		}
+		basic_string_ptr(_Elm * _cs) : base(_cs, _Trt::length(_cs)){}
 
 		template<typename _Oe, typename _Alc>
 		basic_string_ptr(const std::vector<_Oe, _Alc> & _ctn) :base(_ctn) {}
@@ -342,8 +337,8 @@ namespace bear
 
 		inline auto clip(size_t start, size_t end)
 		{
-			if (start > this->size())start = this->size();
 			if (end > this->size())end = this->size();
+			if (start > end)start = end;
 			return basic_string_ptr(this->data() + start, end - start);
 		}
 
@@ -427,5 +422,19 @@ namespace bear
 			std::forward<_Stm>(stm) << *b;
 		}
 		return std::forward<_Stm>(stm);
+	}
+
+	template<typename _T, typename _Elm, typename _Trt>
+	_T string_cast(basic_string_ptr<_Elm, _Trt> arr)
+	{
+		using elm = typename std::remove_const<_Elm>::type;
+
+		std::basic_istringstream<elm, _Trt> ss(arr);
+
+		_T ret;
+
+		ss >> ret;
+
+		return ret;
 	}
 }

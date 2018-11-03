@@ -264,16 +264,16 @@ namespace bear
 
 		inline auto clip(size_t start, size_t end) const
 		{
-			if (start > size())start = size();
 			if (end > size())end = size();
+			if (start > end)start = end;
 			return base_tensor_ptr(at(start), end - start);
 		}
 
 		template<typename ... _T>
 		inline auto clip(size_t start, size_t end, _T ... arg) const
 		{
-			if (start > size())start = size();
 			if (end > size())end = size();
+			if (start > end)start = end;
 			return base_tensor_ptr(_pointer->clip(arg ...),
 				end - start, _pointer.move_step());
 

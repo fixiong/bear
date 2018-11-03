@@ -199,8 +199,8 @@ namespace bear
 
 		inline auto clip(size_t start, size_t end) const
 		{
-			if (start > size())start = size();
 			if (end > size())end = size();
+			if (start > end)start = end;
 			return array_ptr(data() + start, end - start);
 		}
 

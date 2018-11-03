@@ -347,6 +347,16 @@ namespace bear
 		using type = std::true_type;
 	};
 
+	template<bool>
+	struct assert_type {};
+
+
+	template<>
+	struct assert_type<true>
+	{
+		using type = std::true_type;
+	};
+
 	template<typename _T>
 	struct _is_true_type {};
 
