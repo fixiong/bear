@@ -64,14 +64,6 @@ namespace bear
 			size_t i = p_size;
 			for (;;)
 			{
-				if (*p < *q)return -1;
-				if (*p > *q)return 1;
-
-
-				++p;
-				++q;
-				--i;
-
 				if (!i)
 				{
 					if (*q)return -1;
@@ -82,6 +74,15 @@ namespace bear
 					if (i)return 1;
 					return 0;
 				}
+
+				if (*p < *q)return -1;
+				if (*p > *q)return 1;
+
+
+				++p;
+				++q;
+				--i;
+
 			}
 		}
 

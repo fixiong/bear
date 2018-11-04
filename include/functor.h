@@ -93,7 +93,7 @@ namespace bear
 
 		functor() : _ctn(0) {}
 
-		functor(const functor &other) : _ctn(other._ctn->clone()) {}
+		functor(const functor &other) : _ctn(other._ctn ? other._ctn->clone() : 0) {}
 
 		functor &operator = (const functor &other)
 		{
