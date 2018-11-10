@@ -388,6 +388,8 @@ namespace bear
 	{
 		std::vector<basic_string_ptr<_Elm, _Trt>> ret;
 
+		if (oth.empty())return ret;
+
 		auto pr = oth.split(c);
 
 		for (; !pr.second.empty(); pr = pr.second.split(c))
