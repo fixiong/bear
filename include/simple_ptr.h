@@ -6,100 +6,9 @@
 
 namespace bear
 {
-	template<typename _data, typename _deleter = std::default_delete<_data>>
-	class unique_smp_ptr
-	{
-		_deleter del;
-		_data * m;
+	class inplace_deleter {};
 
-		void _destroy()
-		{
-			if (m)
-			{
-				del(m);
-			}
-		}
-
-	public:
-
-		unique_smp_ptr() :m(0) {}
-
-		explicit unique_smp_ptr(_data * _m) :m(_m) {}
-
-
-		template<typename _data_, typename _deleter_>
-		unique_smp_ptr(unique_smp_ptr<_data_,_deleter_> && other) :
-			m(other.release()),
-			del(other.get_deleter()) {}
-
-		~unique_smp_ptr()
-		{
-			_destroy();
-		}
-
-		unique_smp_ptr(unique_smp_ptr &&other) :
-			m(other.release())
-		{
-			other.m = 0;
-		}
-
-		unique_smp_ptr &operator = (unique_smp_ptr &&other)
-		{
-			if (this == &other)return *this;
-			_destroy();
-
-			m = other.m;
-			other.m = 0;
-
-			return *this;
-		}
-
-		_data * release()
-		{
-			auto tmp = m;
-			m = 0;
-			return tmp;
-		}
-
-		void reset(_data * _m = 0)
-		{
-			_destroy();
-			m = _m;
-		}
-
-		void swap(unique_smp_ptr &oth)
-		{
-			std::swap(m, oth.m);
-		}
-
-		_data * get() const
-		{
-			return m;
-		}
-
-		auto get_deleter() const
-		{
-			return del;
-		}
-
-		operator bool() const
-		{
-			return m;
-		}
-
-		_data * operator -> () const
-		{
-			return m;
-		}
-
-		_data &operator * () const
-		{
-			return *m;
-		}
-	};
-
-
-	template<typename _data, bool _multithread = false, typename _deleter = std::default_delete<_data>>
+	template<typename _data, bool _multithread = false, typename _deleter = inplace_deleter>
 	class shared_smp_ptr
 	{
 		using Count = typename std::conditional<_multithread, std::atomic<int>, int>::type;
@@ -137,7 +46,7 @@ namespace bear
 		}
 
 		template<typename _od, typename _dl>
-		shared_smp_ptr(unique_smp_ptr<_od, _deleter> && other) :
+		shared_smp_ptr(std::unique_ptr<_od, _deleter> && other) :
 			m(other.release()),
 			del(other.get_deleter())
 		{
@@ -237,6 +146,117 @@ namespace bear
 		}
 	};
 
+
+	template<typename _data, bool _multithread>
+	class shared_smp_ptr<_data, _multithread, inplace_deleter>
+	{
+		using Count = typename std::conditional<_multithread, std::atomic<int>, int>::type;
+
+		struct data_t
+		{
+			template<class... _Types>
+			data_t(_Types&&... _Args) :m(std::forward<_Types>(_Args)...), c(0) {}
+			_data m;
+			Count c;
+		};
+		data_t * m;
+
+		void _destroy()
+		{
+			if (m)
+			{
+				int _c = (m->c)--;
+				if (!_c)
+				{
+					delete m;
+					m = 0;
+				}
+			}
+		}
+
+		shared_smp_ptr(data_t * _m) :m(_m) {}
+	public:
+
+		shared_smp_ptr() :m(0) {}
+
+		template<class... _Types>
+		static shared_smp_ptr create(_Types&&... _Args)
+		{
+			return shared_smp_ptr(new data_t(std::forward<_Types>(_Args)...));
+		}
+
+		~shared_smp_ptr()
+		{
+			_destroy();
+		}
+
+		shared_smp_ptr(const shared_smp_ptr &other) :
+			m(other.m)
+		{
+			if (m) (m->c) += 1;
+		}
+
+		shared_smp_ptr(shared_smp_ptr &&other) :
+			m(other.m)
+		{
+			other.m = 0;
+		}
+
+		shared_smp_ptr &operator = (shared_smp_ptr &&other)
+		{
+			if (this == &other)return *this;
+
+			_destroy();
+
+			m = other.m;
+			other.m = 0;
+			return *this;
+		}
+
+		shared_smp_ptr &operator = (const shared_smp_ptr &other)
+		{
+			if (this == &other)return *this;
+
+			_destroy();
+
+			m = other.m;
+			if (m) (m->c) += 1;
+
+			return *this;
+		}
+
+		void swap(shared_smp_ptr &oth)
+		{
+			std::swap(m, oth.m);
+		}
+
+		_data * get() const
+		{
+			return &m->m;
+		}
+
+
+		auto get_deleter() const
+		{
+			return inplace_deleter();
+		}
+
+		operator bool() const
+		{
+			return m;
+		}
+
+		_data * operator -> () const
+		{
+			return &m->m;
+		}
+
+		_data &operator * () const
+		{
+			return m->m;
+		}
+	};
+
 	struct release_deleter
 	{
 		template<typename _data>
@@ -247,30 +267,10 @@ namespace bear
 	};
 
 	template<class T>
-	using unique_rls_ptr = unique_smp_ptr<T, release_deleter>;
+	using unique_rls_ptr = std::unique_ptr<T, release_deleter>;
 
 	template<class T, bool MT = false>
 	using shared_rls_ptr = shared_smp_ptr<T, MT, release_deleter>;
-
-	template<bool _multithread = false, typename _data, typename _deleter = std::default_delete<_data>>
-	auto to_shared(std::unique_ptr<_data, _deleter> && other)
-	{
-		return shared_smp_ptr<_data, _multithread, _deleter>(std::move(other));
-	}
-
-	template<bool _multithread = false, typename _data, typename _deleter = std::default_delete<_data>>
-	auto to_shared(unique_smp_ptr<_data, _deleter> && other)
-	{
-		return shared_smp_ptr<_data, _multithread, _deleter>(std::move(other));
-	}
-
-	template<typename _data, typename _deleter>
-	void swap(
-		unique_smp_ptr<_data, _deleter> &lr,
-		unique_smp_ptr<_data, _deleter> &rr)
-	{
-		lr.swap(rr);
-	}
 
 	template<typename _data, bool _multithread, typename _deleter>
 	void swap(
@@ -281,15 +281,15 @@ namespace bear
 	}
 
 	template<typename T, class... _Types>
-	unique_smp_ptr<T> make_unique_smp(_Types&&... _Args)
+	std::unique_ptr<T> make_unique_smp(_Types&&... _Args)
 	{
-		return unique_smp_ptr<T>(new T(std::forward<_Types>(_Args)...));
+		return std::unique_ptr<T>(new T(std::forward<_Types>(_Args)...));
 	}
 
 	template<typename T, class... _Types>
 	shared_smp_ptr<T> make_shared_smp(_Types&&... _Args)
 	{
-		return shared_smp_ptr<T>(new T(std::forward<_Types>(_Args)...));
+		return shared_smp_ptr<T>::create(std::forward<_Types>(_Args)...);
 	}
 
 	class any_container
