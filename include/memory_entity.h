@@ -28,6 +28,19 @@ namespace bear
 
 	}
 
+
+	template<typename _T>
+	auto cast_to_memory(_T & mem)
+	{
+		using elm = typename std::conditional<
+			std::is_const<_T>::value,
+			const char,
+			char>::type;
+
+		return array_ptr<elm>((elm *)&mem, sizeof(typename std::decay<_T>::type));
+
+	}
+
 	template<typename _Ptr, typename _Ot, typename _St, typename _Dt>
 	class basic_memory_entity
 	{
@@ -35,7 +48,11 @@ namespace bear
 		using size_type = _St;
 		using difference_type = _Dt;
 		using ptr_type = _Ptr;
+		using const_ptr_type = typename ptr_type::const_self;
 		using output_type = _Ot;
+		using container = std::pair<
+			basic_memory_entity,
+			std::unique_ptr<typename ptr_type::value_type[]>>;
 
 	protected:
 		ptr_type _ptr;
@@ -56,28 +73,77 @@ namespace bear
 			return (size_type)s * sizeof(size_type);
 		}
 
+		template<typename _T>
+		static auto allocate_size(const _T &sizes)
+		{
+			size_type sz = 0;
+
+			std::for_each(sizes.begin(), sizes.end(), [&sz](const_ptr_type p)
+			{
+				sz += (size_type)p.size();
+			});
+
+			return ptr_type(0,sz + index_size(sizes.size()));
+		}
+
+
+		template<typename _T>
+		void init(const _T &sizes) const
+		{
+			if (sizes.empty())return;
+			_get_size(0) = (size_type)sizes.size() * sizeof(size_type);
+
+			for (size_type i = 1; i < (size_type)sizes.size(); ++i)
+			{
+				_get_size(i) = _get_size(i - 1) + (size_type)sizes[i - 1].size();
+			}
+
+			if (sizes.back().size() != back().size())
+				throw bear_exception(exception_type::size_different, "total size is different to the available memory!");
+		}
+
+		template<typename _T>
+		static container allocate(const _T &sizes)
+		{
+			auto sz = allocate_size(sizes).size();
+			std::unique_ptr<typename ptr_type::value_type[]> mem(
+				new typename ptr_type::value_type[sz]);
+
+			basic_memory_entity me(ptr_type(mem.get(), sz));
+
+			me.init(sizes);
+
+			return make_pair(me, std::move(mem));
+		}
+
+		template<typename _T>
+		void copy(const _T &sizes) const
+		{
+			if(size() != sizes.size())
+				throw bear_exception(exception_type::size_different, "the size is different to the copy destination!");
+
+			for (size_type i = 0; i < (size_type)sizes.size(); ++i)
+			{
+				bear::copy(at(i), sizes[i]);
+			}
+		}
+
+		template<typename _T>
+		void init_copy(const _T &sizes) const
+		{
+			init(sizes);
+			copy(sizes);
+		}
+
 		template<typename ... _T>
-		static size_type allocate_size(size_t s1, _T ... sss)
+		void init_size(size_t s1, _T ... sss) const
 		{
 			auto ss = pack_to_array((size_type)s1, (size_type)sss ...);
 
-			return allocate_size(ss);
-		}
-
-		static size_type allocate_size(const_array_ptr<size_type> sizes)
-		{
-			return sum(sizes) + index_size(sizes.size());
-		}
-
-		template<typename ... _T>
-		void init(size_t s1, _T ... sss) const
-		{
-			auto ss = pack_to_array((size_type)s1, (size_type)sss ...);
-
-			init(ss);
+			init_size(ss);
 		}
 		
-		void init(const_array_ptr<size_type> sizes) const
+		void init_size(const_array_ptr<size_type> sizes) const
 		{
 			if (sizes.empty())return;
 			_get_size(0) = (size_type)sizes.size() * sizeof(size_type);
@@ -270,50 +336,13 @@ namespace bear
 		}
 	};
 
-	class memory_entity :public basic_memory_entity<array_ptr<char>, array_ptr<char>, unsigned int, int>
-	{
-		using base = basic_memory_entity<array_ptr<char>, array_ptr<char>, unsigned int, int>;
-	public:
-		memory_entity(array_ptr<char> mem) : base(mem) {}
+	using memory_entity = basic_memory_entity<array_ptr<char>, array_ptr<char>, unsigned int, int>;
 
-		memory_entity() = default;
-
-
-	};
-
-
-	class const_memory_entity :public basic_memory_entity<const_array_ptr<char>, const_array_ptr<char>, unsigned int, int>
-	{
-		using base = basic_memory_entity<const_array_ptr<char>, const_array_ptr<char>, unsigned int, int>;
-	public:
-
-		const_memory_entity(const_array_ptr<char> mem) : base(mem) {}
-
-		const_memory_entity(memory_entity mem) : base(mem.to_memory()) {}
-
-		const_memory_entity() = default;
-	};
+	using const_memory_entity = basic_memory_entity<const_array_ptr<char>, const_array_ptr<char>, unsigned int, int>;
 
 	template<typename _Elm>
-	class entity_list : public basic_memory_entity<array_ptr<char>, _Elm, unsigned int, int>
-	{
-	public:
-		using base = basic_memory_entity<array_ptr<char>, _Elm, unsigned int, int>;
-		entity_list(array_ptr<char> mem) : base(mem) {}
-
-		entity_list() = default;
-
-	};
-
-
+	using entity_list = basic_memory_entity<array_ptr<char>, _Elm, unsigned int, int>;
 
 	template<typename _Elm>
-	class const_entity_list : public basic_memory_entity<const_array_ptr<char>, _Elm, unsigned int, int>
-	{
-		using base = basic_memory_entity<const_array_ptr<char>, _Elm, unsigned int, int>;
-	public:
-		const_entity_list(const_array_ptr<char> mem) : base(mem) {}
-
-		const_entity_list() = default;
-	};
+	using const_entity_list = basic_memory_entity<const_array_ptr<char>, _Elm, unsigned int, int>;
 }
