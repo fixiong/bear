@@ -22,6 +22,7 @@ namespace bear
 			pointer_outof_range = 1,
 			size_different,
 			memory_not_continuous,
+			other_error,
 			bear_exception_end,
 		};
 
