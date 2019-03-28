@@ -579,12 +579,12 @@ namespace bear
 			return _ptr.at(i);
 		}
 
-		value_type & operator[](size_t i)
+		const value_type & operator[](size_t i)
 		{
 			return _ptr.at(i);
 		}
 
-		const_value_type & operator[](size_t i) const
+		const const_value_type & operator[](size_t i) const
 		{
 			return _ptr.at(i);
 		}
