@@ -433,6 +433,28 @@ namespace bear
 			}
 			return image_ptr<_Elm, _Ch>((_Elm *)_info._data, _info._width_step, _info._width, _info._height);
 		}
+
+		template<typename _Elm>
+		explicit operator tensor_ptr<_Elm, 3>() const
+		{
+			if (sizeof(_Elm) != _info._elm_size) throw bear_exception(exception_type::size_different, "pixel size different!");
+			const auto et = data_type_traits<typename std::decay<_Elm>::type>::value;
+			if (image_unknown_type != _info._elm_type && image_unknown_type != et)
+			{
+				throw bear_exception(exception_type::size_different, "wrong type!");
+			}
+			return make_tensor(
+				make_tensor(
+					make_tensor(
+						_info._data,
+						_info._channel_size
+					),
+					_info._width
+				),
+				_info._height,
+				_info._width_step
+			);
+		}
 	};
 
 
@@ -519,6 +541,31 @@ namespace bear
 				assert(et == _info._elm_type);
 			}
 			return image_ptr<_Elm, _Ch>((_Elm *)_info.data, _info.width_step, _info.width, _info.height);
+		}
+
+
+		template<typename _Elm>
+		explicit operator tensor_ptr<_Elm, 3>() const
+		{
+			static_assert(!std::is_const<_Elm>::value, "should be const!");
+
+			if (sizeof(_Elm) != _info._elm_size) throw bear_exception(exception_type::size_different, "pixel size different!");
+			const auto et = data_type_traits<typename std::decay<_Elm>::type>::value;
+			if (image_unknown_type != _info._elm_type && image_unknown_type != et)
+			{
+				throw bear_exception(exception_type::size_different, "wrong type!");
+			}
+			return make_tensor(
+				make_tensor(
+					make_tensor(
+						_info._data,
+						_info._channel_size
+					),
+					_info._width
+				),
+				_info._height,
+				_info._width_step
+			);
 		}
 	};
 

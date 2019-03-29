@@ -2,6 +2,7 @@
 
 #include "ptr_types.h"
 #include <algorithm>
+#include <assert.h>
 
 namespace bear
 {
@@ -137,6 +138,9 @@ namespace bear
 
 		value_type & at(size_t i) const
 		{
+#ifdef _DEBUG
+			assert(i < size());
+#endif
 			return *(_pointer + i);
 		}
 
@@ -199,8 +203,9 @@ namespace bear
 
 		inline auto clip(size_t start, size_t end) const
 		{
-			if (end > size())end = size();
-			if (start > end)start = end;
+#ifdef _DEBUG
+			assert(end <= size() && start <= end);
+#endif
 			return array_ptr(data() + start, end - start);
 		}
 

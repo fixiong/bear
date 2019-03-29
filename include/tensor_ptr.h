@@ -242,7 +242,7 @@ namespace bear
 		void for_each(_Fn && _fn) const
 		{
 			auto ary = plan();
-			if (ary)
+			if (!ary.empty())
 			{
 				ary.for_each(std::forward<_Fn>(_fn));
 				return;
