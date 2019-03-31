@@ -71,12 +71,20 @@ namespace bear
 
 	struct image_point
 	{
+		image_point(pos_t _x, pos_t _y) :x(_x), y(_y) {}
+		image_point(size_t _x, size_t _y) :x(_x), y(_y) {}
+		image_point(int _x, int _y) :x(_x), y(_y) {}
+		image_point(unsigned int _x, unsigned int _y) :x(_x), y(_y) {}
 		pos_t x = 0;
 		pos_t y = 0;
 	};
 
 	struct image_rectangle
 	{
+		image_rectangle(pos_t _x, pos_t _y, size_t _width, size_t _height) :
+			pos(_x, _y), size(_width, _height) {}
+		image_rectangle(image_point _pos, image_size _size) :
+			pos(_pos), size(_size) {}
 		image_point pos;
 		image_size size;
 	};
@@ -253,7 +261,6 @@ namespace bear
 		}
 	};
 
-
 	template<typename _Elm>
 	class image_ptr<_Elm,1> : public base_image_ptr<_Elm>
 	{
@@ -267,6 +274,8 @@ namespace bear
 		using tensor_type = typename base::base;
 
 		image_ptr() {}
+
+		explicit image_ptr(const tensor_type &oth) :base(oth) {}
 
 		template<typename _Elm_>
 		image_ptr(const image_ptr<_Elm_, 1> &oth) :base(oth)
@@ -340,6 +349,57 @@ namespace bear
 	{
 		return image_size{ img.width(),img.height() };
 	}
+
+
+	template<typename _Base>
+	auto clip_image(base_tensor_ptr<_Base> t, image_rectangle r)
+	{
+		auto h = clip_at<0>(t, r.pos.y, r.pos.y + r.size.height);
+		return clip_at<1>(h, r.pos.x, r.pos.x + r.size.width);
+	}
+
+	template<typename _Elm, size_t _Ch>
+	auto clip_image(image_ptr<_Elm, _Ch> t, image_rectangle r)
+	{
+		return t.clip(r);
+	}
+
+	template<typename _Base>
+	size_t width(base_tensor_ptr<_Base> t)
+	{
+		return size_at<1>(t);
+	}
+
+	template<typename _Elm, size_t _Ch>
+	size_t width(image_ptr<_Elm, _Ch> t)
+	{
+		return t.width();
+	}
+
+	template<typename _Base>
+	size_t height(base_tensor_ptr<_Base> t)
+	{
+		return size_at<0>(t);
+	}
+
+	template<typename _Elm, size_t _Ch>
+	size_t height(image_ptr<_Elm, _Ch> t)
+	{
+		return t.height();
+	}
+
+	template<typename _Elm>
+	size_t channel_size(base_tensor_ptr<array_ptr<_Elm>> t)
+	{
+		return 1;
+	}
+
+	template<typename _Elm>
+	size_t channel_size(base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>> t)
+	{
+		return size_at<2>(t);
+	}
+
 
 
 	template<typename _Elm, size_t _Ch = 1, class Alloc>
@@ -579,12 +639,12 @@ namespace bear
 			return _ptr.at(i);
 		}
 
-		const value_type & operator[](size_t i)
+		value_type operator[](size_t i)
 		{
 			return _ptr.at(i);
 		}
 
-		const const_value_type & operator[](size_t i) const
+		const_value_type operator[](size_t i) const
 		{
 			return _ptr.at(i);
 		}

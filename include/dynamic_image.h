@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "image.h"
+#include "tensor.h"
 
 namespace bear
 {
@@ -16,67 +17,67 @@ namespace bear
 	template<typename _T>
 	struct data_type_traits
 	{
-		static constexpr unsigned int value = image_unknown_type;
+		static constexpr data_type value = image_unknown_type;
 	};
 
 	template<>
 	struct data_type_traits<char>
 	{
-		static constexpr unsigned int value = image_int_type;
+		static constexpr data_type value = image_int_type;
 	};
 
 	template<>
 	struct data_type_traits<unsigned char>
 	{
-		static constexpr unsigned int value = image_unsigned_int_type;
+		static constexpr data_type value = image_unsigned_int_type;
 	};
 
 	template<>
 	struct data_type_traits<short>
 	{
-		static constexpr unsigned int value = image_int_type;
+		static constexpr data_type value = image_int_type;
 	};
 
 	template<>
 	struct data_type_traits<unsigned short>
 	{
-		static constexpr unsigned int value = image_unsigned_int_type;
+		static constexpr data_type value = image_unsigned_int_type;
 	};
 
 	template<>
 	struct data_type_traits<int>
 	{
-		static constexpr unsigned int value = image_int_type;
+		static constexpr data_type value = image_int_type;
 	};
 
 	template<>
 	struct data_type_traits<unsigned int>
 	{
-		static constexpr unsigned int value = image_unsigned_int_type;
+		static constexpr data_type value = image_unsigned_int_type;
 	};
 
 	template<>
 	struct data_type_traits<long long>
 	{
-		static constexpr unsigned int value = image_int_type;
+		static constexpr data_type value = image_int_type;
 	};
 
 	template<>
 	struct data_type_traits<unsigned long long>
 	{
-		static constexpr unsigned int value = image_unsigned_int_type;
+		static constexpr data_type value = image_unsigned_int_type;
 	};
 
 	template<>
 	struct data_type_traits<float>
 	{
-		static constexpr unsigned int value = image_float_type;
+		static constexpr data_type value = image_float_type;
 	};
 
 	template<>
 	struct data_type_traits<double>
 	{
-		static constexpr unsigned int value = image_double_type;
+		static constexpr data_type value = image_double_type;
 	};
 
 	struct dynamic_image_info
@@ -90,23 +91,22 @@ namespace bear
 		size_t _width_step;
 	};
 	
-	template<typename _Elm,size_t _Ch>
-	inline dynamic_image_info get_image_info(const image_ptr<_Elm,_Ch> & ptr)
+	template<typename _Img>
+	inline dynamic_image_info get_image_info(const _Img & ptr)
 	{
 		dynamic_image_info ret;
 
-		ret._width = ptr.width();
-		ret._height = ptr.height();
-		ret._channel_size = _Ch;
+		ret._width = width(ptr);
+		ret._height = height(ptr);
+		ret._channel_size = channel_size(ptr);
 
-		ret._elm_type = data_type_traits<typename std::decay<_Elm>::type>::value;
+		ret._elm_type = data_type_traits<typename std::decay<typename _Img::elm_type>::type>::value;
 		ret._elm_size = ptr.elm_size();
 		ret._data = (char *)ptr.data();
 		ret._width_step = ptr.move_step();
 
 		return ret;
 	}
-
 
 #ifdef CV_MAJOR_VERSION
 
@@ -326,8 +326,43 @@ namespace bear
 		template<typename _Elm, size_t _Ch>
 		dynamic_image_ptr(const image_ptr<_Elm, _Ch> & img)
 		{
-			static_assert(!std::is_const<_Elm>::value, "shulld be const");
+			static_assert(!std::is_const<_Elm>::value, "should not be const");
 			_info = get_image_info(img);
+		}
+
+		template<typename _Elm, size_t _Ch>
+		dynamic_image_ptr(const image<_Elm, _Ch> & img)
+		{
+			static_assert(!std::is_const<_Elm>::value, "should not be const");
+			_info = get_image_info(to_ptr(img));
+		}
+
+		template<typename _Elm>
+		dynamic_image_ptr(const tensor_ptr<_Elm, 3> & img)
+		{
+			static_assert(!std::is_const<_Elm>::value, "should not be const");
+			_info = get_image_info(to_ptr(img));
+		}
+
+		template<typename _Elm>
+		dynamic_image_ptr(const tensor_ptr<_Elm, 2> & img)
+		{
+			static_assert(!std::is_const<_Elm>::value, "should not be const");
+			_info = get_image_info(to_ptr(img));
+		}
+
+		template<typename _Elm>
+		dynamic_image_ptr(const tensor<_Elm, 3> & img)
+		{
+			static_assert(!std::is_const<_Elm>::value, "should not be const");
+			_info = get_image_info(to_ptr(img));
+		}
+
+		template<typename _Elm>
+		dynamic_image_ptr(const tensor<_Elm, 2> & img)
+		{
+			static_assert(!std::is_const<_Elm>::value, "should not be const");
+			_info = get_image_info(to_ptr(img));
 		}
 
 #ifdef CV_MAJOR_VERSION
@@ -446,7 +481,7 @@ namespace bear
 			return make_tensor(
 				make_tensor(
 					make_tensor(
-						_info._data,
+						(_Elm *)_info._data,
 						_info._channel_size
 					),
 					_info._width
@@ -502,6 +537,36 @@ namespace bear
 			_info = get_image_info(img);
 		}
 
+		template<typename _Elm, size_t _Ch>
+		const_dynamic_image_ptr(const image<_Elm, _Ch> & img)
+		{
+			_info = get_image_info(to_ptr(img));
+		}
+
+		template<typename _Elm>
+		const_dynamic_image_ptr(const tensor_ptr<_Elm, 3> & img)
+		{
+			_info = get_image_info(to_ptr(img));
+		}
+
+		template<typename _Elm>
+		const_dynamic_image_ptr(const tensor_ptr<_Elm, 2> & img)
+		{
+			_info = get_image_info(to_ptr(img));
+		}
+
+		template<typename _Elm>
+		const_dynamic_image_ptr(const tensor<_Elm, 3> & img)
+		{
+			_info = get_image_info(to_ptr(img));
+		}
+
+		template<typename _Elm>
+		const_dynamic_image_ptr(const tensor<_Elm, 2> & img)
+		{
+			_info = get_image_info(to_ptr(img));
+		}
+
 		const_dynamic_image_ptr(const dynamic_image_ptr &other)
 		{
 			_info = other._info;
@@ -532,7 +597,7 @@ namespace bear
 		template<typename _Elm, size_t _Ch>
 		explicit operator image_ptr<_Elm, _Ch>() const
 		{
-			static_assert(!std::is_const<_Elm>::value, "should be const!");
+			static_assert(std::is_const<_Elm>::value, "should be const!");
 
 			if (_Ch != _info._channel_size || sizeof(_Elm) != _info._elm_size) throw bear_exception(exception_type::size_different, "pixel size different!");
 			const auto et = data_type_traits<typename std::decay<_Elm>::type>::value;
@@ -540,13 +605,13 @@ namespace bear
 			{
 				assert(et == _info._elm_type);
 			}
-			return image_ptr<_Elm, _Ch>((_Elm *)_info.data, _info.width_step, _info.width, _info.height);
+			return image_ptr<_Elm, _Ch>((_Elm *)_info._data, _info._width_step, _info._width, _info._height);
 		}
 
 		template<typename _Elm>
 		explicit operator base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>>() const
 		{
-			static_assert(!std::is_const<_Elm>::value, "should be const!");
+			static_assert(std::is_const<_Elm>::value, "should be const!");
 
 			if (sizeof(_Elm) != _info._elm_size) throw bear_exception(exception_type::size_different, "pixel size different!");
 			const auto et = data_type_traits<typename std::decay<_Elm>::type>::value;
@@ -557,7 +622,7 @@ namespace bear
 			return make_tensor(
 				make_tensor(
 					make_tensor(
-						_info._data,
+						(_Elm *)_info._data,
 						_info._channel_size
 					),
 					_info._width

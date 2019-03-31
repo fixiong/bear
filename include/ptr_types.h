@@ -308,4 +308,14 @@ namespace bear
 		//typename std::decay<_Tr>::type *>::value &&
 		sizeof(_Tl) == sizeof(_Tr)> {};
 
+	template<typename _T>
+	class wrapper : public _T
+	{
+	public:
+		wrapper() {}
+		wrapper(const _T & other) :_T(other) {}
+
+		wrapper(_T && other) :_T(std::forward<_T>(other)) {}
+	};
+
 }
