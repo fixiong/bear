@@ -193,6 +193,9 @@ namespace bear
 
 		value_type at(size_t i) const
 		{
+#ifdef _DEBUG
+			assert(i < size());
+#endif
 			return *(begin() + (difference_type)i);
 		}
 
@@ -272,8 +275,9 @@ namespace bear
 		template<typename ... _T>
 		inline auto clip(size_t start, size_t end, _T ... arg) const
 		{
-			if (end > size())end = size();
-			if (start > end)start = end;
+#ifdef _DEBUG
+			assert(end <= size() && start <= end);
+#endif
 			return base_tensor_ptr(_pointer->clip(arg ...),
 				end - start, _pointer.move_step());
 

@@ -252,6 +252,7 @@ namespace bear
 			ret._elm_size = 1;
 		}
 
+		ret._elm_type = image_unsigned_int_type;
 		ret._width_step = img.bytesPerLine();
 
 		return ret;
@@ -260,14 +261,14 @@ namespace bear
 	inline dynamic_image_info get_image_info(QImage &img)
 	{
 		dynamic_image_info ret = _make_d_image(img);
-		ret._data = (char *)img.bytesPerLine();
+		ret._data = (char *)img.bits();
 		return ret;
 	}
 
 	inline const dynamic_image_info get_image_info(const QImage &img)
 	{
 		dynamic_image_info ret = _make_d_image(img);
-		ret._data = (char *)img.bytesPerLine();
+		ret._data = (char *)img.bits();
 		return ret;
 	}
 
@@ -435,6 +436,8 @@ namespace bear
 
 		friend class const_dynamic_image_ptr;
 
+		dynamic_image_ptr() {}
+
 		dynamic_image_ptr(
 			size_t width,
 			size_t height,
@@ -462,7 +465,7 @@ namespace bear
 		{
 			if (_Ch != _info._channel_size || sizeof(_Elm) != _info._elm_size) throw bear_exception(exception_type::size_different, "pixel size different!");
 			const auto et = data_type_traits<typename std::decay<_Elm>::type>::value;
-			if (image_unknown_type != _info._elm_type && image_unknown_type != et)
+			if (image_unknown_type != _info._elm_type && _info._elm_type != et)
 			{
 				throw bear_exception(exception_type::size_different, "wrong type!");
 			}
@@ -474,7 +477,7 @@ namespace bear
 		{
 			if (sizeof(_Elm) != _info._elm_size) throw bear_exception(exception_type::size_different, "pixel size different!");
 			const auto et = data_type_traits<typename std::decay<_Elm>::type>::value;
-			if (image_unknown_type != _info._elm_type && image_unknown_type != et)
+			if (image_unknown_type != _info._elm_type && _info._elm_type != et)
 			{
 				throw bear_exception(exception_type::size_different, "wrong type!");
 			}
@@ -572,6 +575,8 @@ namespace bear
 			_info = other._info;
 		}
 
+		const_dynamic_image_ptr() {}
+
 		const_dynamic_image_ptr(
 			size_t width,
 			size_t height,
@@ -601,7 +606,7 @@ namespace bear
 
 			if (_Ch != _info._channel_size || sizeof(_Elm) != _info._elm_size) throw bear_exception(exception_type::size_different, "pixel size different!");
 			const auto et = data_type_traits<typename std::decay<_Elm>::type>::value;
-			if (image_unknown_type != _info._elm_type && image_unknown_type != et)
+			if (image_unknown_type != _info._elm_type && _info._elm_type != et)
 			{
 				assert(et == _info._elm_type);
 			}
@@ -615,7 +620,7 @@ namespace bear
 
 			if (sizeof(_Elm) != _info._elm_size) throw bear_exception(exception_type::size_different, "pixel size different!");
 			const auto et = data_type_traits<typename std::decay<_Elm>::type>::value;
-			if (image_unknown_type != _info._elm_type && image_unknown_type != et)
+			if (image_unknown_type != _info._elm_type && _info._elm_type != et)
 			{
 				throw bear_exception(exception_type::size_different, "wrong type!");
 			}
