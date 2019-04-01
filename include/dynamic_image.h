@@ -27,21 +27,9 @@ namespace bear
 	};
 
 	template<>
-	struct data_type_traits<unsigned char>
-	{
-		static constexpr data_type value = image_unsigned_int_type;
-	};
-
-	template<>
 	struct data_type_traits<short>
 	{
 		static constexpr data_type value = image_int_type;
-	};
-
-	template<>
-	struct data_type_traits<unsigned short>
-	{
-		static constexpr data_type value = image_unsigned_int_type;
 	};
 
 	template<>
@@ -51,15 +39,27 @@ namespace bear
 	};
 
 	template<>
-	struct data_type_traits<unsigned int>
+	struct data_type_traits<long long>
+	{
+		static constexpr data_type value = image_int_type;
+	};
+
+	template<>
+	struct data_type_traits<unsigned char>
 	{
 		static constexpr data_type value = image_unsigned_int_type;
 	};
 
 	template<>
-	struct data_type_traits<long long>
+	struct data_type_traits<unsigned short>
 	{
-		static constexpr data_type value = image_int_type;
+		static constexpr data_type value = image_unsigned_int_type;
+	};
+
+	template<>
+	struct data_type_traits<unsigned int>
+	{
+		static constexpr data_type value = image_unsigned_int_type;
 	};
 
 	template<>
@@ -142,6 +142,55 @@ namespace bear
 		return ret;
 	}
 
+
+	inline int get_image_cv_type(const dynamic_image_info & _info)
+	{
+		int type = 0;
+
+		if (1 == _info._elm_size)
+		{
+			if (image_int_type == _info._elm_type)
+			{
+				type = CV_MAKETYPE(CV_8S, (int)_info._channel_size);
+			}
+			else if (image_unsigned_int_type == _info._elm_type)
+			{
+				type = CV_MAKETYPE(CV_8U, (int)_info._channel_size);
+			}
+		}
+		else if (2 == _info._elm_size)
+		{
+			if (image_int_type == _info._elm_type)
+			{
+				type = CV_MAKETYPE(CV_16S, (int)_info._channel_size);
+			}
+			else if (image_unsigned_int_type == _info._elm_type)
+			{
+				type = CV_MAKETYPE(CV_16U, (int)_info._channel_size);
+			}
+		}
+		else if (4 == _info._elm_size)
+		{
+			if (image_int_type == _info._elm_type)
+			{
+				type = CV_MAKETYPE(CV_32S, (int)_info._channel_size);
+			}
+			else if (image_float_type == _info._elm_type)
+			{
+				type = CV_MAKETYPE(CV_32F, (int)_info._channel_size);
+			}
+		}
+		else if (8 == _info._elm_size)
+		{
+			if (image_float_type == _info._elm_type)
+			{
+				type = CV_MAKETYPE(CV_64F, (int)_info._channel_size);
+			}
+		}
+
+		return type;
+	}
+
 	inline dynamic_image_info get_image_info(const CvMat &img)
 	{
 		dynamic_image_info ret;
@@ -175,6 +224,10 @@ namespace bear
 		case CV_32F:
 			ret._elm_type = image_float_type;
 			ret._elm_size = 4;
+			break;
+		case CV_64F:
+			ret._elm_type = image_double_type;
+			ret._elm_size = 8;
 			break;
 		default:
 			ret._elm_type = image_unknown_type;
@@ -390,34 +443,13 @@ namespace bear
 
 		operator cv::Mat ()
 		{
-			auto type = CV_MAKETYPE(CV_8U, 1);
+			int type = get_image_cv_type(_info);
 
-			switch (_info._elm_type)
+			if (!type)
 			{
-			case image_int_type:
-				break;
-			case image_unsigned_int_type:
-				break;
-			case image_float_type:
-				break;
-			case image_double_type:
-				break;
-			default:
-				break;
+				throw bear_exception(exception_type::other_error, "wrong img type!");
 			}
 
-			if (1 == _info._elm_size)
-			{
-				type = CV_MAKETYPE(CV_8U, (int)_info._channel_size);
-			}
-			if (2 == _info._elm_size)
-			{
-				type = CV_MAKETYPE(CV_16U, (int)_info._channel_size);
-			}
-			if (4 == _info._elm_size)
-			{
-				type = CV_MAKETYPE(CV_32F, (int)_info._channel_size);
-			}
 			cv::Mat ret((int)_info._height, (int)_info._width, type, _info._data, (int)_info._width_step);
 			return ret;
 		}
