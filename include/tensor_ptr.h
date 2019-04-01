@@ -278,7 +278,7 @@ namespace bear
 #ifdef _DEBUG
 			assert(end <= size() && start <= end);
 #endif
-			return base_tensor_ptr(_pointer->clip(arg ...),
+			return base_tensor_ptr((_pointer + start)->clip(arg ...),
 				end - start, _pointer.move_step());
 
 		}
