@@ -72,9 +72,7 @@ namespace bear
 	struct image_point
 	{
 		image_point(pos_t _x, pos_t _y) :x(_x), y(_y) {}
-		image_point(size_t _x, size_t _y) :x(_x), y(_y) {}
-		image_point(int _x, int _y) :x(_x), y(_y) {}
-		image_point(unsigned int _x, unsigned int _y) :x(_x), y(_y) {}
+		//image_point(size_t _x, size_t _y) :x(_x), y(_y) {}
 		pos_t x = 0;
 		pos_t y = 0;
 	};

@@ -128,7 +128,7 @@ namespace bear
 
 	inline dynamic_image_info get_image_info_roi(const IplImage & img)
 	{
-		PImage ret = get_image_info(img);
+		auto ret = get_image_info(img);
 
 		if (!img.roi)return ret;
 
@@ -189,7 +189,7 @@ namespace bear
 
 	inline dynamic_image_info get_image_info(const cv::Mat &_img)
 	{
-		auto img CvMat(_img));
+		CvMat img(_img);
 		return get_image_info(img);
 	}
 
@@ -383,14 +383,14 @@ namespace bear
 			_info = get_image_info(img);
 		}
 
-		dynamic_image_ptr(const cv::Mat &_img)
+		dynamic_image_ptr(const cv::Mat &img)
 		{
 			_info = get_image_info(img);
 		}
 
 		operator cv::Mat ()
 		{
-			int type = 0;
+			auto type = CV_MAKETYPE(CV_8U, 1);
 
 			switch (_info._elm_type)
 			{
@@ -406,19 +406,19 @@ namespace bear
 				break;
 			}
 
-			if (8 == img.depth)
+			if (1 == _info._elm_size)
 			{
-				type = CV_MAKETYPE(CV_8U, img.n_channel);
+				type = CV_MAKETYPE(CV_8U, (int)_info._channel_size);
 			}
-			if (16 == depth(img))
+			if (2 == _info._elm_size)
 			{
-				type = CV_MAKETYPE(CV_16U, img.n_channel);
+				type = CV_MAKETYPE(CV_16U, (int)_info._channel_size);
 			}
-			if (32 == depth(img))
+			if (4 == _info._elm_size)
 			{
-				type = CV_MAKETYPE(CV_32F, img.n_channel);
+				type = CV_MAKETYPE(CV_32F, (int)_info._channel_size);
 			}
-			cv::Mat ret(img.height, img.width, type, img.data, img.width_step);
+			cv::Mat ret((int)_info._height, (int)_info._width, type, _info._data, (int)_info._width_step);
 			return ret;
 		}
 
@@ -508,9 +508,9 @@ namespace bear
 			_info = get_image_info(img);
 		}
 
-		const_dynamic_image_ptr(const IplImage & img)
+		const_dynamic_image_ptr(IplImage * img)
 		{
-			_info = get_image_info(img);
+			_info = get_image_info(*img);
 		}
 
 		const_dynamic_image_ptr(const CvMat &img)
@@ -518,7 +518,7 @@ namespace bear
 			_info = get_image_info(img);
 		}
 
-		const_dynamic_image_ptr(const cv::Mat &_img)
+		const_dynamic_image_ptr(const cv::Mat &img)
 		{
 			_info = get_image_info(img);
 		}
@@ -637,23 +637,4 @@ namespace bear
 			);
 		}
 	};
-
-
-#ifdef CV_MAJOR_VERSION
-
-	inline const dynamic_image_ptr get_image_info(const QImage &img)
-	{
-		dynamic_image_info ret = _make_d_image(img);
-		ret._data = (char *)img.bytesPerLine();
-		return ret;
-	}
-
-#endif
-
-#ifdef CV_MAJOR_VERSION
-
-
-
-#endif
-
 }
