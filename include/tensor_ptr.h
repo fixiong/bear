@@ -120,7 +120,7 @@ namespace bear
 	private:
 
 		iterator _pointer;
-		size_t _size;
+		size_t _size = 0;
 
 	public:
 
