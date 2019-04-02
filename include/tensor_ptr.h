@@ -267,8 +267,9 @@ namespace bear
 
 		inline auto clip(size_t start, size_t end) const
 		{
-			if (end > size())end = size();
-			if (start > end)start = end;
+#ifdef _DEBUG
+			assert(end <= size() && start <= end);
+#endif
 			return base_tensor_ptr(at(start), end - start);
 		}
 
