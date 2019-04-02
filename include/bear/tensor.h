@@ -296,7 +296,7 @@ namespace bear
 
 		size_t _make_data(const deep_size_type & sz)
 		{
-			constexpr const line_size = (sz.back() * sizeof(elm_type) + _Aln - 1) / _Aln * _Aln;
+			constexpr const size_t line_size = (sz.back() * sizeof(elm_type) + _Aln - 1) / _Aln * _Aln;
 
 			buf = new char[total_size(sz) / sz.back() * line_size + _Aln - 1];
 

@@ -191,7 +191,7 @@ namespace bear
 		image_ptr(const image_ptr<_Elm_,_Ch> &oth) :base(oth)
 		{
 			static_assert(
-				is_memory_compatible<elm_type, _Elm_::elm_type>::value,
+				is_memory_compatible<elm_type, typename _Elm_::elm_type>::value,
 				"element type not compatible!");
 		}
 
@@ -365,7 +365,8 @@ namespace bear
 	template<typename _Base>
 	size_t width(base_tensor_ptr<_Base> t)
 	{
-		return size_at<1>(t);
+		if (!t.size())return 0;
+		return t.front().size();
 	}
 
 	template<typename _Elm, size_t _Ch>
@@ -377,7 +378,7 @@ namespace bear
 	template<typename _Base>
 	size_t height(base_tensor_ptr<_Base> t)
 	{
-		return size_at<0>(t);
+		return t.size();
 	}
 
 	template<typename _Elm, size_t _Ch>
@@ -467,7 +468,7 @@ namespace bear
 			if (_ptr.width() != oth.width() ||
 				_ptr.height != oth.height())
 			{
-				resize_canvas(oth.size(), m_align_level);
+				resize_canvas(oth.size());
 			}
 
 			copy(_ptr, oth);
@@ -480,7 +481,7 @@ namespace bear
 			_data.resize(_size.width * _size.height * _Ch);
 
 			_ptr = image_type(
-				(typename image_type::elm_type *) &data[0],
+				(typename image_type::elm_type *) &_data[0],
 				_size.width * sizeof(typename image_type::elm_type),
 				_size.width,
 				_size.height
