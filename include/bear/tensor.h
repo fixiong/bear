@@ -347,7 +347,7 @@ namespace bear
 		{
 			if (size(_ptr) == _size)return;
 
-			_data.resize(_size.total_size());
+			//_data.resize(_size.total_size());
 			_ptr = ptr_type(&_data[0], _size);
 		}
 
