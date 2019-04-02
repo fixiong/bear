@@ -396,7 +396,9 @@ namespace bear
 	template<typename _Elm>
 	size_t channel_size(base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>> t)
 	{
-		return size_at<2>(t);
+		if (!t.size())return 0;
+		if (!t.front().size())return 0;
+		return t.front().front().size();
 	}
 
 
