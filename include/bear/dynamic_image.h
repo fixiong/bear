@@ -108,6 +108,23 @@ namespace bear
 		return ret;
 	}
 
+	template<typename _Elm>
+	inline dynamic_image_info get_image_info(const base_tensor_ptr<_Elm> & ptr)
+	{
+		dynamic_image_info ret;
+
+		ret._width = width(ptr);
+		ret._height = height(ptr);
+		ret._channel_size = channel_size(ptr);
+
+		ret._elm_type = data_type_traits<typename std::decay<typename base_tensor_ptr<_Elm>::elm_type>::type>::value;
+		ret._elm_size = sizeof(typename base_tensor_ptr<_Elm>::elm_type);
+		ret._data = (char *)ptr.data();
+		ret._width_step = ptr.move_step();
+
+		return ret;
+	}
+
 #ifdef CV_MAJOR_VERSION
 
 	inline dynamic_image_info get_image_info(const IplImage &img)
@@ -392,17 +409,17 @@ namespace bear
 		}
 
 		template<typename _Elm>
-		dynamic_image_ptr(const tensor_ptr<_Elm, 3> & img)
+		dynamic_image_ptr(base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>> & img)
 		{
 			static_assert(!std::is_const<_Elm>::value, "should not be const");
-			_info = get_image_info(to_ptr(img));
+			_info = get_image_info(img);
 		}
 
 		template<typename _Elm>
-		dynamic_image_ptr(const tensor_ptr<_Elm, 2> & img)
+		dynamic_image_ptr(base_tensor_ptr<base_tensor_ptr<_Elm>> & img)
 		{
 			static_assert(!std::is_const<_Elm>::value, "should not be const");
-			_info = get_image_info(to_ptr(img));
+			_info = get_image_info(img);
 		}
 
 		template<typename _Elm>
@@ -579,15 +596,15 @@ namespace bear
 		}
 
 		template<typename _Elm>
-		const_dynamic_image_ptr(const tensor_ptr<_Elm, 3> & img)
+		const_dynamic_image_ptr(const base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>> & img)
 		{
-			_info = get_image_info(to_ptr(img));
+			_info = get_image_info(img);
 		}
 
 		template<typename _Elm>
-		const_dynamic_image_ptr(const tensor_ptr<_Elm, 2> & img)
+		const_dynamic_image_ptr(const base_tensor_ptr<base_tensor_ptr<_Elm>> & img)
 		{
-			_info = get_image_info(to_ptr(img));
+			_info = get_image_info(img);
 		}
 
 		template<typename _Elm>
