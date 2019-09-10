@@ -10,8 +10,7 @@ namespace bear
 		image_unknown_type,
 		image_int_type,
 		image_unsigned_int_type,
-		image_float_type,
-		image_double_type,
+		image_float_type
 	};
 
 	template<typename _T>
@@ -77,7 +76,7 @@ namespace bear
 	template<>
 	struct data_type_traits<double>
 	{
-		static constexpr data_type value = image_double_type;
+		static constexpr data_type value = image_float_type;
 	};
 
 	struct dynamic_image_info
@@ -126,6 +125,8 @@ namespace bear
 	}
 
 #ifdef CV_MAJOR_VERSION
+
+#if CV_MAJOR_VERSION < 3
 
 	inline dynamic_image_info get_image_info(const IplImage &img)
 	{
@@ -262,6 +263,125 @@ namespace bear
 		CvMat img(_img);
 		return get_image_info(img);
 	}
+#else
+	inline dynamic_image_info get_image_info(const cv::Mat& img)
+	{
+		dynamic_image_info ret;
+
+		ret._width = img.size[1];
+		ret._height = img.size[0];
+
+		//switch (img.dims)
+		//{
+		//case 2:
+		//	ret._channel_size = 1;
+		//	break;
+		//case 3:
+		//	ret._channel_size = img.size[2];
+		//	break;
+		//default:
+		//	throw bear_exception(exception_type::pointer_outof_range, literal_u8("mat dim more than three!"));
+		//	break;
+		//}
+
+		switch (CV_MAT_DEPTH(img.type()))
+		{
+		case CV_8U:
+			ret._elm_type = image_unsigned_int_type;
+			ret._elm_size = 1;
+			break;
+		case CV_16U:
+			ret._elm_type = image_unsigned_int_type;
+			ret._elm_size = 2;
+			break;
+		case CV_8S:
+			ret._elm_type = image_int_type;
+			ret._elm_size = 1;
+			break;
+		case CV_16S:
+			ret._elm_type = image_int_type;
+			ret._elm_size = 2;
+			break;
+		case CV_32S:
+			ret._elm_type = image_int_type;
+			ret._elm_size = 4;
+			break;
+		case CV_32F:
+			ret._elm_type = image_float_type;
+			ret._elm_size = 4;
+			break;
+		case CV_64F:
+			ret._elm_type = image_float_type;
+			ret._elm_size = 8;
+			break;
+		case CV_16F:
+			ret._elm_type = image_float_type;
+			ret._elm_size = 2;
+			break;
+		default:
+			throw bear_exception(exception_type::pointer_outof_range, literal_u8("unknown cv type!"));
+			break;
+		}
+
+		ret._channel_size = img.type() >> CV_CN_SHIFT;
+		ret._elm_size = img.depth() >> 8;
+		ret._data = (char*)img.data;
+		ret._width_step = img.step[0];
+
+		return ret;
+	}
+
+	inline int get_image_cv_type(const dynamic_image_info& _info)
+	{
+		int type = 0;
+
+		if (1 == _info._elm_size)
+		{
+			if (image_int_type == _info._elm_type)
+			{
+				type = CV_MAKETYPE(CV_8S, (int)_info._channel_size);
+			}
+			else if (image_unsigned_int_type == _info._elm_type)
+			{
+				type = CV_MAKETYPE(CV_8U, (int)_info._channel_size);
+			}
+		}
+		else if (2 == _info._elm_size)
+		{
+			if (image_int_type == _info._elm_type)
+			{
+				type = CV_MAKETYPE(CV_16S, (int)_info._channel_size);
+			}
+			else if (image_unsigned_int_type == _info._elm_type)
+			{
+				type = CV_MAKETYPE(CV_16U, (int)_info._channel_size);
+			}
+		}
+		else if (4 == _info._elm_size)
+		{
+			if (image_int_type == _info._elm_type)
+			{
+				type = CV_MAKETYPE(CV_32S, (int)_info._channel_size);
+			}
+			else if (image_float_type == _info._elm_type)
+			{
+				type = CV_MAKETYPE(CV_32F, (int)_info._channel_size);
+			}
+		}
+		else if (8 == _info._elm_size)
+		{
+			if (image_float_type == _info._elm_type)
+			{
+				type = CV_MAKETYPE(CV_64F, (int)_info._channel_size);
+			}
+		}
+
+		return type;
+	}
+
+#endif
+
+
 
 #endif
 
@@ -438,6 +558,8 @@ namespace bear
 
 #ifdef CV_MAJOR_VERSION
 
+#if CV_MAJOR_VERSION < 3
+
 		dynamic_image_ptr(const IplImage &img)
 		{
 			_info = get_image_info(img);
@@ -453,12 +575,14 @@ namespace bear
 			_info = get_image_info(img);
 		}
 
-		dynamic_image_ptr(const cv::Mat &img)
+#endif
+
+		dynamic_image_ptr(const cv::Mat& img)
 		{
 			_info = get_image_info(img);
 		}
 
-		operator cv::Mat ()
+		operator cv::Mat()
 		{
 			int type = get_image_cv_type(_info);
 
@@ -552,6 +676,7 @@ namespace bear
 
 #ifdef CV_MAJOR_VERSION
 
+#if CV_MAJOR_VERSION < 3
 		const_dynamic_image_ptr(const IplImage &img)
 		{
 			_info = get_image_info(img);
@@ -566,6 +691,7 @@ namespace bear
 		{
 			_info = get_image_info(img);
 		}
+#endif
 
 		const_dynamic_image_ptr(const cv::Mat &img)
 		{
