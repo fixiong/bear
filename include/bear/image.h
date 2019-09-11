@@ -403,7 +403,7 @@ namespace bear
 
 
 
-	template<typename _Elm, size_t _Ch = 1, class Alloc>
+	template<typename _Elm, size_t _Ch = 1, class Alloc = std::allocator<_Elm>>
 	class image
 	{
 		static_assert(!std::is_same<_Elm, bool>::value, "It is bool...");

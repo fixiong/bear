@@ -306,10 +306,10 @@ namespace bear
 	template<size_t _Dim>
 	struct _tensor_clip_at
 	{
-		template<typename _T>
-		static auto _run(const _T & _oth, size_t _start, size_t _end)
+		template<typename ____T>
+		static auto _run(const ____T& _oth, size_t _start, size_t _end)
 		{
-			return _T(_tensor_clip_at<_Dim - 1>::_run(_oth.front(), _start, _end),
+			return ____T(_tensor_clip_at<_Dim - 1>::_run(_oth.front(), _start, _end),
 				_oth.size(), _oth.move_step());
 		}
 	};

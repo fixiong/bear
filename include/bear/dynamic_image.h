@@ -244,7 +244,7 @@ namespace bear
 			ret._elm_size = 4;
 			break;
 		case CV_64F:
-			ret._elm_type = image_double_type;
+			ret._elm_type = image_float_type;
 			ret._elm_size = 8;
 			break;
 		default:
