@@ -282,3 +282,4 @@ reshape另有一个接受vector右值的版本，利用vector原有的内存空�
 包括tensor,image的内存对齐版本aligned_tensor,aligned_image,进行卷积运算的conv_1d(),conv2d()函数，对数组某一维求和，方差等的统计函数等等，今后可能会加入。
 
 
+
