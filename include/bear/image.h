@@ -350,51 +350,51 @@ namespace bear
 
 
 	template<typename _Base>
-	auto clip_image(base_tensor_ptr<_Base> t, image_rectangle r)
+	inline auto clip_image(base_tensor_ptr<_Base> t, image_rectangle r)
 	{
 		auto h = clip_at<0>(t, r.pos.y, r.pos.y + r.size.height);
 		return clip_at<1>(h, r.pos.x, r.pos.x + r.size.width);
 	}
 
 	template<typename _Elm, size_t _Ch>
-	auto clip_image(image_ptr<_Elm, _Ch> t, image_rectangle r)
+	inline auto clip_image(image_ptr<_Elm, _Ch> t, image_rectangle r)
 	{
 		return t.clip(r);
 	}
 
 	template<typename _Base>
-	size_t width(base_tensor_ptr<_Base> t)
+	inline size_t width(base_tensor_ptr<_Base> t)
 	{
 		if (!t.size())return 0;
 		return t.front().size();
 	}
 
 	template<typename _Elm, size_t _Ch>
-	size_t width(image_ptr<_Elm, _Ch> t)
+	inline size_t width(image_ptr<_Elm, _Ch> t)
 	{
 		return t.width();
 	}
 
 	template<typename _Base>
-	size_t height(base_tensor_ptr<_Base> t)
+	inline size_t height(base_tensor_ptr<_Base> t)
 	{
 		return t.size();
 	}
 
 	template<typename _Elm, size_t _Ch>
-	size_t height(image_ptr<_Elm, _Ch> t)
+	inline size_t height(image_ptr<_Elm, _Ch> t)
 	{
 		return t.height();
 	}
 
 	template<typename _Elm>
-	size_t channel_size(base_tensor_ptr<array_ptr<_Elm>> t)
+	inline size_t channel_size(base_tensor_ptr<array_ptr<_Elm>> t)
 	{
 		return 1;
 	}
 
 	template<typename _Elm>
-	size_t channel_size(base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>> t)
+	inline size_t channel_size(base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>> t)
 	{
 		if (!t.size())return 0;
 		if (!t.front().size())return 0;

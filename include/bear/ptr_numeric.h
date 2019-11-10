@@ -73,20 +73,10 @@ namespace bear
 	}
 
 
-	template<typename _T>
-	struct __not_string
-	{
-		using type = std::true_type;
-	};
-
-	template<typename _T, typename _R>
-	struct __not_string<std::basic_string<_T,_R>>{};
-
 
 	template<typename _Bl, typename _Br>
 	inline _Bl & add_inplace(_Bl && ls, _Br && rs
-		, typename type_exist<typename __not_string<typename std::decay<decltype(ls)>::type>::type,
-		decltype(to_ptr(ls)),
+		, typename type_exist<decltype(to_ptr(ls)),
 		typename ptr_flag<typename std::decay<decltype(rs)>::type>::not_both>
 		::type = std::true_type()
 	)

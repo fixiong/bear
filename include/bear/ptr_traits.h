@@ -145,12 +145,6 @@ namespace bear
 			_type>::type;
 	};
 
-	template<typename _Elm, typename _Trt, typename _Nelm>
-	struct ptr_change_elm<basic_string_ptr<_Elm, _Trt>, _Nelm>
-	{
-		using type = basic_string_ptr<typename ptr_change_elm<_Elm, _Nelm>::type, _Trt>;
-	};
-
 	template<typename _Oe, typename _Elm>
 	struct ptr_change_elm<array_ptr<_Oe>, _Elm>
 	{
@@ -212,12 +206,6 @@ namespace bear
 	template<typename _Elm, size_t _Ch>
 	const typename image_ptr<_Elm, _Ch>::tensor_type &
 		to_base_ptr(const image_ptr<_Elm,_Ch> &p)
-	{
-		return p;
-	}
-
-	template<typename _Elm, typename _Trt>
-	const array_ptr<_Elm> &to_base_ptr(const basic_string_ptr<_Elm, _Trt> &p)
 	{
 		return p;
 	}
@@ -288,18 +276,6 @@ namespace bear
 		static constexpr size_t dim = _ptr_traits<_Elm>::dim + 1;
 		static elm_type &get_elm();
 		using container_type = std::vector<_Elm>;
-		using is_ptr = std::true_type;
-	};
-
-	template<typename _Elm, typename _Trt>
-	struct ptr_traits<basic_string_ptr<_Elm, _Trt>>
-	{
-		using type = basic_string_ptr<_Elm, _Trt>;
-		using sub_type = _Elm;
-		using elm_type = typename _ptr_traits<_Elm>::elm_type;
-		static constexpr size_t dim = _ptr_traits<_Elm>::dim + 1;
-		static elm_type &get_elm();
-		using container_type = std::basic_string<_Elm, _Trt>;
 		using is_ptr = std::true_type;
 	};
 
@@ -385,15 +361,6 @@ namespace bear
 		using is_1d = std::true_type;
 	};
 
-	template<typename _Elm, typename _Trt>
-	struct ptr_flag<basic_string_ptr<_Elm, _Trt>>
-	{
-		using is_ptr = std::true_type;
-		using not_container = std::true_type;
-		using is_one = std::true_type;
-		using is_1d = std::true_type;
-	};
-
 	template<typename _Elm>
 	struct ptr_flag<base_tensor_ptr<_Elm>>
 	{
@@ -427,16 +394,6 @@ namespace bear
 		using is_one = std::true_type;
 		using is_1d = std::true_type;
 	};
-
-	template<typename _Elm, typename _Al>
-	struct ptr_flag<std::basic_string<_Elm, _Al>>
-	{
-		using not_ptr = std::true_type;
-		using is_container = std::true_type;
-		using is_one = std::true_type;
-		using is_1d = std::true_type;
-	};
-
 
 	template<typename _Elm, size_t _Ch>
 	struct ptr_flag<image<_Elm, _Ch>>
