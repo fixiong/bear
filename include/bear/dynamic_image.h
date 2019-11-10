@@ -514,6 +514,11 @@ namespace bear
 
 	public:
 
+		char * data()
+		{
+			return _info._data;
+		}
+
 		template<typename _Elm, size_t _Ch>
 		dynamic_image_ptr(const image_ptr<_Elm, _Ch> & img)
 		{
@@ -673,6 +678,11 @@ namespace bear
 	{
 
 	public:
+
+		const char * data()
+		{
+			return _info._data;
+		}
 
 #ifdef CV_MAJOR_VERSION
 
