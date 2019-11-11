@@ -183,4 +183,33 @@ namespace bear
 			return _fun;
 		}
 	};
+
+	class defer
+	{
+		functor<void> _fun;
+
+	public:
+		template<typename Fun>
+		explicit defer(Fun&& fun) : _fun(std::forward<Fun>(fun)) {}
+
+		defer() {}
+		defer(const defer& other) = delete;
+		defer& operator = (const defer& other) = delete;
+
+		defer(defer&& other) = default;
+		defer& operator = (defer&& other) = default;
+
+		~defer()
+		{
+			if (_fun)
+			{
+				_fun();
+			}
+		}
+
+		operator bool()
+		{
+			return _fun;
+		}
+	};
 }
