@@ -477,6 +477,11 @@ namespace bear
 		dynamic_image_info _info;
 	public:
 
+		bool empty() const
+		{
+			return _info._height == 0;
+		}
+
 		size_t width() const
 		{
 			return _info._width;
@@ -506,6 +511,11 @@ namespace bear
 		{
 			return _info._elm_size;
 		}
+
+		size_t width_setp() const
+		{
+			return _info._width_step;
+		}
 	};
 
 
@@ -513,6 +523,11 @@ namespace bear
 	{
 
 	public:
+
+		char * data() const
+		{
+			return _info._data;
+		}
 
 		template<typename _Elm, size_t _Ch>
 		dynamic_image_ptr(const image_ptr<_Elm, _Ch> & img)
@@ -674,6 +689,11 @@ namespace bear
 
 	public:
 
+		const char * data() const
+		{
+			return _info._data;
+		}
+
 #ifdef CV_MAJOR_VERSION
 
 #if CV_MAJOR_VERSION < 3
@@ -758,7 +778,7 @@ namespace bear
 			size_t channel_size,
 			data_type elm_type,
 			size_t elm_size,
-			char * data,
+			const char * data,
 			size_t width_step = 0)
 		{
 			_info._width = width;
@@ -766,7 +786,7 @@ namespace bear
 			_info._channel_size = channel_size;
 			_info._elm_type = elm_type;
 			_info._elm_size = elm_size;
-			_info._data = data;
+			_info._data = (char *)data;
 			_info._width_step = width_step;
 
 			size_t ws = _info._width * _info._channel_size * _info._elm_size;
@@ -810,6 +830,125 @@ namespace bear
 				_info._height,
 				_info._width_step
 			);
+		}
+	};
+
+
+	inline image_size size(const base_dynamic_image_ptr & img)
+	{
+		return image_size{ img.width(),img.height() };
+	}
+
+	inline size_t width(const base_dynamic_image_ptr & img)
+	{
+		return img.width();
+	}
+
+	inline size_t height(const base_dynamic_image_ptr & img)
+	{
+		return img.height();
+	}
+
+	inline size_t channel_size(const base_dynamic_image_ptr & img)
+	{
+		return img.channel_size();
+	}
+
+
+	inline auto clip_image(const const_dynamic_image_ptr & img, image_rectangle r)
+	{
+		if (r.pos.x < 0 || r.pos.y < 0 || r.pos.x + r.size.width > img.width() || r.pos.y + r.size.height > img.height())
+		{
+			throw bear_exception(exception_type::pointer_outof_range, "rectangle out of range!");
+		}
+
+		auto index = r.pos.y * img.width_setp() + r.pos.x * img.channel_size() * img.elm_size();
+		return const_dynamic_image_ptr(
+			r.size.width,
+			r.size.height,
+			img.channel_size(),
+			img.elm_type(),
+			img.elm_size(),
+			img.data() + index,
+			img.width_setp());
+	}
+
+	inline auto clip_image(const dynamic_image_ptr & img, image_rectangle r)
+	{
+		if (r.pos.x < 0 || r.pos.y < 0 || r.pos.x + r.size.width > img.width() || r.pos.y + r.size.height > img.height())
+		{
+			throw bear_exception(exception_type::pointer_outof_range, "rectangle out of range!");
+		}
+
+		auto index = r.pos.y * img.width_setp() + r.pos.x * img.channel_size() * img.elm_size();
+		return dynamic_image_ptr(
+			r.size.width,
+			r.size.height,
+			img.channel_size(),
+			img.elm_type(),
+			img.elm_size(),
+			img.data() + index,
+			img.width_setp());
+	}
+
+	inline auto scanline(const const_dynamic_image_ptr & img, size_t y)
+	{
+		if (y > img.height())
+		{
+			throw bear_exception(exception_type::pointer_outof_range, "y out of range!");
+		}
+		return const_array_ptr<char>(img.data() + y * img.width_setp(), img.width());
+	}
+
+	inline auto scanline(const dynamic_image_ptr & img, size_t y)
+	{
+		if (y > img.height())
+		{
+			throw bear_exception(exception_type::pointer_outof_range, "y out of range!");
+		}
+		return array_ptr<char>(img.data() + y * img.width_setp(), img.width());
+	}
+
+	class dynamic_image : public dynamic_image_ptr {
+	private:
+		std::vector<char> _data;
+	public:
+		dynamic_image() = default;
+		dynamic_image(const dynamic_image & other) = default;
+		dynamic_image& operator = (const dynamic_image & other) = default;
+
+
+		dynamic_image(dynamic_image && other):
+			_data(std::move(other._data))
+		{
+			_info = other._info;
+			other._info._width = 0;
+			other._info._height = 0;
+			other._info._data = NULL;
+		}
+		dynamic_image& operator = (dynamic_image && other)
+		{
+			_data = std::move(other._data);
+			_info = other._info;
+			other._info._width = 0;
+			other._info._height = 0;
+			other._info._data = NULL;
+
+			return *this;
+		}
+
+
+
+		dynamic_image(
+			size_t width,
+			size_t height,
+			size_t channel_size,
+			data_type elm_type,
+			size_t elm_size):
+			dynamic_image_ptr(width,height,channel_size,elm_type,elm_size,0,width * channel_size * elm_size),
+			_data(width * height * channel_size * elm_size)
+		{
+			_info._data = &_data[0];
 		}
 	};
 }

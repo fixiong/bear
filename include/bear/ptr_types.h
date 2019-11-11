@@ -275,7 +275,7 @@ namespace bear
 	inline const_tensor_ptr<_Elm, _Dim> &to_ptr(const tensor<_Elm, _Dim, Alloc> &img);
 
 
-	template<typename _Elm, size_t _Ch, class Alloc = std::allocator<_Elm> >
+	template<typename _Elm, size_t _Ch = 1, class Alloc = std::allocator<_Elm> >
 	class image;
 
 	template<typename _Elm, size_t _Ch, size_t _Aln >

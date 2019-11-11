@@ -428,7 +428,7 @@ namespace bear
 	}
 
 	template<typename _T, typename _Elm, typename _Trt>
-	_T string_cast(basic_string_ptr<_Elm, _Trt> arr)
+	inline _T string_cast(basic_string_ptr<_Elm, _Trt> arr)
 	{
 		using elm = typename std::remove_const<_Elm>::type;
 
@@ -439,5 +439,22 @@ namespace bear
 		ss >> ret;
 
 		return ret;
+	}
+
+
+
+	template<typename _Elm, typename _Trt, typename _Alc>
+	inline std::basic_string<_Elm,_Trt,_Alc> operator + (std::basic_string<_Elm, _Trt, _Alc> &&s, basic_string_ptr<_Elm, _Trt> arr)
+	{
+		s.append(arr.data(), arr.size());
+		return std::move(s);
+	}
+
+	template<typename _Elm, typename _Trt, typename _Alc>
+	inline std::basic_string<_Elm, _Trt, _Alc> operator + (const std::basic_string<_Elm, _Trt, _Alc> &_s, basic_string_ptr<_Elm, _Trt> arr)
+	{
+		auto s = _s;
+		s.append(arr.data(), arr.size());
+		return s;
 	}
 }
