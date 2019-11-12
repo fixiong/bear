@@ -1,7 +1,8 @@
 #ifndef _IMAGE_H
 #define _IMAGE_H
 
-#include "container_pointer.h"
+#include "tensor.h"
+#include "ptr_algorism.h"
 
 #define F_RGBA (0 | (1 << 8) | (2 << 16) | (3 << 24) | (4 << 28))
 #define F_BGRA (2 | (1 << 8) | (0 << 16) | (3 << 24) | (4 << 28))
@@ -365,14 +366,19 @@ namespace bear
 	template<typename _Base>
 	inline size_t width(base_tensor_ptr<_Base> t)
 	{
-		if (!t.size())return 0;
-		return t.front().size();
+		return size_at<1>(t);
 	}
 
 	template<typename _Elm, size_t _Ch>
 	inline size_t width(image_ptr<_Elm, _Ch> t)
 	{
 		return t.width();
+	}
+	
+	template<typename _Elm, size_t _Dim>
+	inline size_t width(const tensor<_Elm,_Dim> &t)
+	{
+		return width(to_ptr(t));
 	}
 
 	template<typename _Base>
@@ -386,6 +392,12 @@ namespace bear
 	{
 		return t.height();
 	}
+	
+	template<typename _Elm, size_t _Dim>
+	inline size_t height(const tensor<_Elm,_Dim> &t)
+	{
+		return height(to_ptr(t));
+	}
 
 	template<typename _Elm>
 	inline size_t channel_size(base_tensor_ptr<array_ptr<_Elm>> t)
@@ -396,12 +408,14 @@ namespace bear
 	template<typename _Elm>
 	inline size_t channel_size(base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>> t)
 	{
-		if (!t.size())return 0;
-		if (!t.front().size())return 0;
-		return t.front().front().size();
+		return size_at<2>(t);
 	}
 
-
+	template<typename _Elm, size_t _Dim>
+	inline size_t channel_size(const tensor<_Elm,_Dim> &t)
+	{
+		return channel_size(to_ptr(t));
+	}
 
 	template<typename _Elm, size_t _Ch, class Alloc>
 	class image

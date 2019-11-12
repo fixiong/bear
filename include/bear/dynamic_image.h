@@ -314,17 +314,19 @@ namespace bear
 			ret._elm_type = image_float_type;
 			ret._elm_size = 8;
 			break;
+
+#if CV_MAJOR_VERSION >= 4
 		case CV_16F:
 			ret._elm_type = image_float_type;
 			ret._elm_size = 2;
 			break;
+#endif
 		default:
 			throw bear_exception(exception_type::pointer_outof_range, literal_u8("unknown cv type!"));
 			break;
 		}
 
-		ret._channel_size = img.type() >> CV_CN_SHIFT;
-		ret._elm_size = img.depth() >> 8;
+		ret._channel_size = (img.type() >> CV_CN_SHIFT) + 1;
 		ret._data = (char*)img.data;
 		ret._width_step = img.step[0];
 
