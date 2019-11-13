@@ -126,6 +126,11 @@ namespace bear
 			return this->at(y).at(x);
 		}
 
+		bool empty() const
+		{
+			return base::empty();
+		}
+
 		const base &to_tensor() const
 		{
 			return *this;
@@ -192,7 +197,7 @@ namespace bear
 		image_ptr(const image_ptr<_Elm_,_Ch> &oth) :base(oth)
 		{
 			static_assert(
-				is_memory_compatible<elm_type, typename _Elm_::elm_type>::value,
+				is_memory_compatible<elm_type, typename image_ptr<_Elm_, _Ch>::elm_type>::value,
 				"element type not compatible!");
 		}
 
@@ -343,80 +348,6 @@ namespace bear
 		}
 	};
 
-	template<typename _Elm, size_t _Ch>
-	inline image_size size(const image_ptr<_Elm, _Ch> & img)
-	{
-		return image_size{ img.width(),img.height() };
-	}
-
-
-	template<typename _Base>
-	inline auto clip_image(base_tensor_ptr<_Base> t, image_rectangle r)
-	{
-		auto h = clip_at<0>(t, r.pos.y, r.pos.y + r.size.height);
-		return clip_at<1>(h, r.pos.x, r.pos.x + r.size.width);
-	}
-
-	template<typename _Elm, size_t _Ch>
-	inline auto clip_image(image_ptr<_Elm, _Ch> t, image_rectangle r)
-	{
-		return t.clip(r);
-	}
-
-	template<typename _Base>
-	inline size_t width(base_tensor_ptr<_Base> t)
-	{
-		return size_at<1>(t);
-	}
-
-	template<typename _Elm, size_t _Ch>
-	inline size_t width(image_ptr<_Elm, _Ch> t)
-	{
-		return t.width();
-	}
-	
-	template<typename _Elm, size_t _Dim>
-	inline size_t width(const tensor<_Elm,_Dim> &t)
-	{
-		return width(to_ptr(t));
-	}
-
-	template<typename _Base>
-	inline size_t height(base_tensor_ptr<_Base> t)
-	{
-		return t.size();
-	}
-
-	template<typename _Elm, size_t _Ch>
-	inline size_t height(image_ptr<_Elm, _Ch> t)
-	{
-		return t.height();
-	}
-	
-	template<typename _Elm, size_t _Dim>
-	inline size_t height(const tensor<_Elm,_Dim> &t)
-	{
-		return height(to_ptr(t));
-	}
-
-	template<typename _Elm>
-	inline size_t channel_size(base_tensor_ptr<array_ptr<_Elm>> t)
-	{
-		return 1;
-	}
-
-	template<typename _Elm>
-	inline size_t channel_size(base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>> t)
-	{
-		return size_at<2>(t);
-	}
-
-	template<typename _Elm, size_t _Dim>
-	inline size_t channel_size(const tensor<_Elm,_Dim> &t)
-	{
-		return channel_size(to_ptr(t));
-	}
-
 	template<typename _Elm, size_t _Ch, class Alloc>
 	class image
 	{
@@ -488,6 +419,11 @@ namespace bear
 			}
 
 			copy(_ptr, oth);
+		}
+
+		bool empty() const
+		{
+			return _ptr.empty();
 		}
 
 		void resize_canvas(image_size _size)
@@ -708,6 +644,120 @@ namespace bear
 		ret = ptr;
 
 		return ret;
+	}
+
+
+
+	template<typename _Elm, size_t _Ch>
+	inline image_size size(const image_ptr<_Elm, _Ch> & img)
+	{
+		return image_size{ img.width(),img.height() };
+	}
+
+
+	template<typename _Elm, size_t _Ch>
+	inline image_size size(const image<_Elm, _Ch> & img)
+	{
+		return image_size{ img.width(),img.height() };
+	}
+
+
+	template<typename _Base>
+	inline auto clip_image(base_tensor_ptr<_Base> t, image_rectangle r)
+	{
+		auto h = clip_at<0>(t, r.pos.y, r.pos.y + r.size.height);
+		return clip_at<1>(h, r.pos.x, r.pos.x + r.size.width);
+	}
+
+	template<typename _Elm, size_t _Ch>
+	inline auto clip_image(image_ptr<_Elm, _Ch> t, image_rectangle r)
+	{
+		return t.clip(r);
+	}
+
+
+	template<typename _Elm, size_t _Ch>
+	inline auto clip_image(const image<_Elm, _Ch> &t, image_rectangle r)
+	{
+		return to_ptr(t).clip(r);
+	}
+
+	template<typename _Base>
+	inline size_t width(base_tensor_ptr<_Base> t)
+	{
+		return size_at<1>(t);
+	}
+
+	template<typename _Elm, size_t _Ch>
+	inline size_t width(image_ptr<_Elm, _Ch> t)
+	{
+		return t.width();
+	}
+
+	template<typename _Elm, size_t _Ch>
+	inline size_t width(const image<_Elm, _Ch> &t)
+	{
+		return t.width();
+	}
+
+	template<typename _Elm, size_t _Dim>
+	inline size_t width(const tensor<_Elm, _Dim> &t)
+	{
+		return width(to_ptr(t));
+	}
+
+	template<typename _Base>
+	inline size_t height(base_tensor_ptr<_Base> t)
+	{
+		return t.size();
+	}
+
+	template<typename _Elm, size_t _Ch>
+	inline size_t height(image_ptr<_Elm, _Ch> t)
+	{
+		return t.height();
+	}
+
+	template<typename _Elm, size_t _Ch>
+	inline size_t height(const image<_Elm, _Ch> &t)
+	{
+		return t.height();
+	}
+
+	template<typename _Elm, size_t _Dim>
+	inline size_t height(const tensor<_Elm, _Dim> &t)
+	{
+		return height(to_ptr(t));
+	}
+
+	template<typename _Elm>
+	inline size_t channel_size(base_tensor_ptr<array_ptr<_Elm>> t)
+	{
+		return 1;
+	}
+
+	template<typename _Elm>
+	inline size_t channel_size(base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>> t)
+	{
+		return size_at<2>(t);
+	}
+
+	template<typename _Elm, size_t _Dim>
+	inline size_t channel_size(const tensor<_Elm, _Dim> &t)
+	{
+		return channel_size(to_ptr(t));
+	}
+
+	template<typename _Elm, size_t _Ch>
+	inline size_t channel_size(image_ptr<_Elm,_Ch> t)
+	{
+		return t.channel_size();
+	}
+
+	template<typename _Elm, size_t _Ch>
+	inline size_t channel_size(const image<_Elm, _Ch> &t)
+	{
+		return t.channel_size();
 	}
 }
 
