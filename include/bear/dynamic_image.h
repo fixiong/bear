@@ -653,7 +653,9 @@ namespace bear
 		template<typename _Elm, size_t _Ch>
 		explicit operator image_ptr<_Elm, _Ch>() const
 		{
-			if (_Ch != _info._channel_size || sizeof(_Elm) != _info._elm_size) throw bear_exception(exception_type::size_different, "pixel size different!");
+			if ((image_unknown_type != _info._elm_type || !empty()) &&
+				(_Ch != _info._channel_size || sizeof(_Elm) != _info._elm_size))
+				throw bear_exception(exception_type::size_different, "pixel size different!");
 			const auto et = data_type_traits<typename std::decay<_Elm>::type>::value;
 			if (image_unknown_type != _info._elm_type && _info._elm_type != et)
 			{
@@ -665,7 +667,9 @@ namespace bear
 		template<typename _Elm>
 		explicit operator base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>>() const
 		{
-			if (sizeof(_Elm) != _info._elm_size) throw bear_exception(exception_type::size_different, "pixel size different!");
+			if ((image_unknown_type != _info._elm_type || !empty()) &&
+				sizeof(_Elm) != _info._elm_size)
+				throw bear_exception(exception_type::size_different, "pixel size different!");
 			const auto et = data_type_traits<typename std::decay<_Elm>::type>::value;
 			if (image_unknown_type != _info._elm_type && _info._elm_type != et)
 			{
@@ -801,7 +805,9 @@ namespace bear
 		{
 			static_assert(std::is_const<_Elm>::value, "should be const!");
 
-			if (_Ch != _info._channel_size || sizeof(_Elm) != _info._elm_size) throw bear_exception(exception_type::size_different, "pixel size different!");
+			if ((image_unknown_type != _info._elm_type || !empty()) &&
+				(_Ch != _info._channel_size || sizeof(_Elm) != _info._elm_size))
+				throw bear_exception(exception_type::size_different, "pixel size different!");
 			const auto et = data_type_traits<typename std::decay<_Elm>::type>::value;
 			if (image_unknown_type != _info._elm_type && _info._elm_type != et)
 			{
@@ -815,7 +821,9 @@ namespace bear
 		{
 			static_assert(std::is_const<_Elm>::value, "should be const!");
 
-			if (sizeof(_Elm) != _info._elm_size) throw bear_exception(exception_type::size_different, "pixel size different!");
+			if ((image_unknown_type != _info._elm_type || !empty()) &&
+				sizeof(_Elm) != _info._elm_size)
+				throw bear_exception(exception_type::size_different, "pixel size different!");
 			const auto et = data_type_traits<typename std::decay<_Elm>::type>::value;
 			if (image_unknown_type != _info._elm_type && _info._elm_type != et)
 			{
