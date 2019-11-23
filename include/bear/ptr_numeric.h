@@ -265,3 +265,20 @@ namespace bear
 #undef _NAME
 #undef _OP
 
+
+#define _NAME bit_right_sft
+#define _OP >>
+
+#include "ptr_numeric_macro.h"
+
+#undef _NAME
+#undef _OP
+
+
+#define _NAME bit_left_sft
+#define _OP <<
+
+#include "ptr_numeric_macro.h"
+
+#undef _NAME
+#undef _OP

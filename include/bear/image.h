@@ -682,6 +682,12 @@ namespace bear
 		return to_ptr(t).clip(r);
 	}
 
+	template<typename _Elm, size_t _Ch>
+	inline auto clip_image(image<_Elm, _Ch> &t, image_rectangle r)
+	{
+		return to_ptr(t).clip(r);
+	}
+
 	template<typename _Base>
 	inline size_t width(base_tensor_ptr<_Base> t)
 	{
