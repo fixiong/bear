@@ -113,10 +113,9 @@ namespace bear
 
 		std::array<size_t, _Lv> sizes;
 
-		if (!zip_check_size(sizes, ts ...))
-		{
-			throw bear_exception(exception_type::size_different, "all target should be the same size!");
-		}
+#ifdef _DEBUG
+		assert(zip_check_size(sizes, ts ...))
+#endif
 
 		zip(std::forward<_Fn>(fn), sizes, std::forward<_Ts>(ts).begin() ...);
 	}
@@ -177,10 +176,9 @@ namespace bear
 
 		std::array<size_t, _Lv> sizes;
 
-		if (!zip_check_size(sizes, ts ...))
-		{
-			throw bear_exception(exception_type::size_different, "all target should be the same size!");
-		}
+#ifdef _DEBUG
+		assert(!zip_check_size(sizes, ts ...))
+#endif
 
 		zip_r(std::forward<_Fn>(fn), sizes, std::forward<_Ts>(ts).begin() ...);
 	}
