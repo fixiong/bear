@@ -21,7 +21,9 @@ namespace bear
 		const _T2 &t2,
 		const _Ts & ... ts)
 	{
-		if (t1.size() != t2.size())return false;
+		auto s1 = t1.size();
+		auto s2 = t2.size();
+		if (s1 != s2)return false;
 		return zip_check_size(size, t2, ts ...);
 	}
 
@@ -114,7 +116,7 @@ namespace bear
 		std::array<size_t, _Lv> sizes;
 
 #ifdef _DEBUG
-		assert(zip_check_size(sizes, ts ...))
+		assert(zip_check_size(sizes, ts ...));
 #endif
 
 		zip(std::forward<_Fn>(fn), sizes, std::forward<_Ts>(ts).begin() ...);
@@ -177,7 +179,7 @@ namespace bear
 		std::array<size_t, _Lv> sizes;
 
 #ifdef _DEBUG
-		assert(!zip_check_size(sizes, ts ...))
+		assert(zip_check_size(sizes, ts ...));
 #endif
 
 		zip_r(std::forward<_Fn>(fn), sizes, std::forward<_Ts>(ts).begin() ...);
