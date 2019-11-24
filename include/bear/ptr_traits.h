@@ -124,6 +124,10 @@ namespace bear
 	struct ptr_change_elm
 	{
 		using type = _Elm;
+		static type create(const _Ptr &)
+		{
+			return type();
+		}
 	};
 
 	template<typename _Oe, size_t _Sz, typename _Elm>
@@ -131,6 +135,11 @@ namespace bear
 	{
 		using type = std::array<
 			typename ptr_change_elm<_Oe, _Elm>::type, _Sz>;
+
+		static type create(const std::array<_Oe, _Sz> &)
+		{
+			return type();
+		}
 	};
 
 	template<typename _Oe, size_t _Sz, typename _Elm>
@@ -143,18 +152,33 @@ namespace bear
 			std::is_const<_Elm>::value,
 			const _type,
 			_type>::type;
+
+		static type create(const std::array<_Oe, _Sz> &)
+		{
+			return type();
+		}
 	};
 
 	template<typename _Oe, typename _Elm>
 	struct ptr_change_elm<array_ptr<_Oe>, _Elm>
 	{
 		using type = array_ptr<typename ptr_change_elm<_Oe, _Elm>::type>;
+
+		static auto create(const array_ptr<_Oe> & other)
+		{
+			return std::vector<_Elm>(other.size());
+		}
 	};
 
 	template<typename _Bs, typename _Elm>
 	struct ptr_change_elm<base_tensor_ptr<_Bs>, _Elm>
 	{
 		using type = base_tensor_ptr<typename ptr_change_elm<_Bs, _Elm>::type>;
+
+		static auto create(const base_tensor_ptr<_Bs> & other)
+		{
+			return tensor<_Elm, base_tensor_ptr<_Bs>::dim>(size(other));
+		}
 	};
 
 
@@ -162,6 +186,11 @@ namespace bear
 	struct ptr_change_elm<image_ptr<_Oe,_Ch>, _Elm>
 	{
 		using type = image_ptr<typename ptr_change_elm<_Oe, _Elm>::type,_Ch>;
+
+		static type create(const image_ptr<_Oe, _Ch> & other)
+		{
+			return image<_Elm, _Ch>(size(other));
+		}
 	};
 
 
@@ -257,6 +286,30 @@ namespace bear
 
 	template<typename _Elm, size_t _Sz>
 	struct ptr_traits<const std::array<_Elm, _Sz>>
+	{
+		using type = std::array<_Elm, _Sz>;
+		using sub_type = _Elm;
+		using elm_type = const typename _ptr_traits<_Elm>::elm_type;
+		static constexpr size_t dim = _ptr_traits<_Elm>::dim + 1;
+		static elm_type &get_elm();
+		using container_type = std::array<_Elm, _Sz>;
+		using is_ptr = std::true_type;
+	};
+
+	template<typename _Elm, size_t _Sz>
+	struct ptr_traits<std::array<_Elm, _Sz> &>
+	{
+		using type = std::array<_Elm, _Sz>;
+		using sub_type = _Elm;
+		using elm_type = typename _ptr_traits<_Elm>::elm_type;
+		static constexpr size_t dim = _ptr_traits<_Elm>::dim + 1;
+		static elm_type &get_elm();
+		using container_type = std::array<_Elm, _Sz>;
+		using is_ptr = std::true_type;
+	};
+
+	template<typename _Elm, size_t _Sz>
+	struct ptr_traits<const std::array<_Elm, _Sz> &>
 	{
 		using type = std::array<_Elm, _Sz>;
 		using sub_type = _Elm;

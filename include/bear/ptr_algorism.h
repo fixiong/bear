@@ -117,6 +117,8 @@ namespace bear
 
 #ifdef _DEBUG
 		assert(zip_check_size(sizes, ts ...));
+#else
+		zip_check_size(sizes, ts ...);
 #endif
 
 		zip(std::forward<_Fn>(fn), sizes, std::forward<_Ts>(ts).begin() ...);
@@ -180,6 +182,8 @@ namespace bear
 
 #ifdef _DEBUG
 		assert(zip_check_size(sizes, ts ...));
+#else
+		zip_check_size(sizes, ts ...);
 #endif
 
 		zip_r(std::forward<_Fn>(fn), sizes, std::forward<_Ts>(ts).begin() ...);
