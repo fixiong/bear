@@ -16,7 +16,6 @@ namespace bear
 	template<typename _T>
 	struct data_type_traits
 	{
-		static constexpr data_type value = image_unknown_type;
 	};
 
 	template<>
@@ -91,7 +90,7 @@ namespace bear
 	};
 	
 	template<typename _Img>
-	inline dynamic_image_info get_image_info(const _Img & ptr)
+	inline dynamic_image_info get_image_info(const _Img & ptr, data_type dt)
 	{
 		dynamic_image_info ret;
 
@@ -99,7 +98,7 @@ namespace bear
 		ret._height = height(ptr);
 		ret._channel_size = channel_size(ptr);
 
-		ret._elm_type = data_type_traits<typename std::decay<typename _Img::elm_type>::type>::value;
+		ret._elm_type = dt;
 		ret._elm_size = ptr.elm_size();
 		ret._data = (char *)ptr.data();
 		ret._width_step = ptr.move_step();
@@ -542,7 +541,7 @@ namespace bear
 		dynamic_image_ptr(const image<_Elm, _Ch> & img)
 		{
 			static_assert(!std::is_const<_Elm>::value, "should not be const");
-			_info = get_image_info(to_ptr(img));
+			_info = get_image_info(to_ptr(img), data_type_traits<typename std::decay<_Elm>::type>::value);
 		}
 
 		template<typename _Elm>
