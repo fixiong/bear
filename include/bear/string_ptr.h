@@ -138,8 +138,11 @@ namespace bear
 				basic_string_ptr(pos + 1, base::end() - pos - 1));
 		}
 
+		std::basic_string<typename std::decay<_Elm>::type, _Trt> to_string() const{
+			return std::basic_string<typename std::decay<_Elm>::type, _Trt>(this->begin(), this->end());
+		}
 
-		operator std::basic_string<typename std::decay<_Elm>::type, _Trt>()
+		operator std::basic_string<typename std::decay<_Elm>::type, _Trt>() const
 		{
 			return std::basic_string<typename std::decay<_Elm>::type, _Trt>(this->begin(), this->end());
 		}
