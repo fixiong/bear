@@ -2,6 +2,7 @@
 
 #include<type_traits>
 #include<utility>
+#include"bear_exception.h"
 
 namespace bear
 {
@@ -75,11 +76,16 @@ namespace bear
 	public:
 		_Result operator()(_Types... _args) const //won't work!
 		{
+			static_assert(false, "functor can't be const!");
 			return _get_ctn()->run(static_cast<_Types>(_args)...);
 		}
 
 		_Result operator()(_Types... _args)
 		{
+			if (_ctn == nullptr)
+			{
+				throw bear_exception(exception_type::other_error, "call a empty functor!");
+			}
 			return _get_ctn()->run(static_cast<_Types>(_args)...);
 		}
 
@@ -113,12 +119,12 @@ namespace bear
 			return *this;
 		}
 
-		functor(functor &&other) : _ctn(other._ctn)
+		functor(functor &&other) : _ctn(other._ctn) noexcept
 		{
 			other._ctn = 0;
 		}
 
-		functor &operator = (functor &&other)
+		functor &operator = (functor &&other) noexcept
 		{
 			if (this == &other)return *this;
 
@@ -130,7 +136,7 @@ namespace bear
 			return *this;
 		}
 
-		operator bool()
+		operator bool() const
 		{
 			return _ctn;
 		}

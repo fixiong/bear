@@ -19,10 +19,12 @@ namespace bear
 	{
 		enum type
 		{
-			pointer_outof_range = 1,
+			bear_exception_start = 1201,
+			pointer_outof_range,
 			size_different,
 			memory_not_continuous,
 			other_error,
+			multithread_error,
 			bear_exception_end,
 		};
 

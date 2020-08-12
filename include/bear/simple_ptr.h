@@ -281,15 +281,21 @@ namespace bear
 	}
 
 	template<typename T, class... _Types>
-	std::unique_ptr<T> make_unique_smp(_Types&&... _Args)
+	auto make_unique_smp(_Types&&... _Args)
 	{
 		return std::unique_ptr<T>(new T(std::forward<_Types>(_Args)...));
 	}
 
 	template<typename T, class... _Types>
-	shared_smp_ptr<T> make_shared_smp(_Types&&... _Args)
+	auto make_shared_smp(_Types&&... _Args)
 	{
 		return shared_smp_ptr<T>::create(std::forward<_Types>(_Args)...);
+	}
+
+	template<typename T, class... _Types>
+	auto make_shared_mt_smp(_Types&&... _Args)
+	{
+		return shared_smp_ptr<T,true>::create(std::forward<_Types>(_Args)...);
 	}
 
 	class any_container
