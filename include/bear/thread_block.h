@@ -8,25 +8,38 @@
 
 namespace bear
 {
-	struct thread_block_data
+	class thread_block_data
 	{
-		functor<void> work;
+		std::thread::id belong = std::this_thread::get_id();
+		bool working = true;
 		std::mutex lock;
-	};
+	public:
+		std::thread thread;
+		functor<void> work;
 
-	class thread_block
-	{
-		using data_ptr = shared_smp_ptr<thread_block_data, true>;
+		void check_thread()
+		{
+			if (belong != std::this_thread::get_id())
+			{
+				throw bear_exception(exception_type::multithread_error,
+					"can't access thread_block from another thread!");
+			}
+		}
 
-		std::thread::id m_belong = std::this_thread::get_id();
+		void _wait()
+		{
+			if (!working) return;
+			working = false;
+			lock.lock();
+		}
 
-		data_ptr m_data = make_shared_mt_smp<thread_block_data>();
+		void _run()
+		{
+			working = true;
+			lock.unlock();
+		}
 
-		bool m_working = true;
-
-		std::thread m_thread;
-
-		static void vork_routine(data_ptr data)
+		static void vork_routine(shared_smp_ptr<thread_block_data, true> data)
 		{
 			for(;;)
 			{
@@ -38,75 +51,58 @@ namespace bear
 				data->work();
 			}
 		}
+	};
 
-		void check_thread()
-		{
-			if (m_belong != std::this_thread::get_id())
-			{
-				throw bear_exception(exception_type::multithread_error,
-					"can't access thread_block from another thread!");
-			}
-		}
-
-		void _wait()
-		{
-			if (!m_working) return;
-			m_working = false;
-			m_data->lock.lock();
-		}
-
-		void _run()
-		{
-			m_working = true;
-			m_data->lock.unlock();
-		}
+	class thread_block
+	{
+		shared_smp_ptr<thread_block_data, true> m_data = make_shared_mt_smp<thread_block_data>();
 
 	public:
 
 		thread_block()
 		{
-			_wait();
-			m_thread = std::thread(vork_routine, m_data);
+			m_data->_wait();
+			m_data->thread = std::thread(thread_block_data::vork_routine, m_data);
 		}
 
 		~thread_block()
 		{
-			check_thread();
+			m_data->check_thread();
 
-			_wait();
+			m_data->_wait();
 			m_data->work = functor<void>();
-			_run();
+			m_data->_run();
 		}
 
 		void wait()
 		{
-			check_thread();
+			m_data->check_thread();
 
-			_wait();
+			m_data->_wait();
 		}
 
 		void run(functor<void>&& work)
 		{
-			check_thread();
+			m_data->check_thread();
 
 			if (!work) throw bear_exception(exception_type::multithread_error,
 				"work is empty!");
 
-			_wait();
+			m_data->_wait();
 			m_data->work = std::move(work);
-			_run();
+			m_data->_run();
 		}
 
 		void run(const functor<void>& work)
 		{
-			check_thread();
+			m_data->check_thread();
 
 			if (!work) throw bear_exception(exception_type::multithread_error,
 				"work is empty!");
 
-			_wait();
+			m_data->_wait();
 			m_data->work = work;
-			_run();
+			m_data->_run();
 		}
 	};
 }
