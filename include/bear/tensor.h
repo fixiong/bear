@@ -76,7 +76,7 @@ namespace bear
 
 		tensor &operator = (const ptr_type& oth)
 		{
-			if (size(_ptr) != size(oth))
+			if (bear::size(_ptr) != size(oth))
 			{
 				resize(size(oth));
 			}
@@ -86,9 +86,9 @@ namespace bear
 
 		void resize(const deep_size_type &_size)
 		{
-			if (size(_ptr) == _size)return;
+			if (bear::size(_ptr) == _size)return;
 
-			_data.resize(_size.total_size());
+			_data.resize(total_size(_size));
 			_ptr = ptr_type(&_data[0], _size);
 		}
 
