@@ -428,12 +428,12 @@ namespace bear
 
 		void resize_canvas(image_size _size)
 		{
-			if (size(_ptr) == _size)return;
+			if (bear::size(_ptr) == _size)return;
 
 			_data.resize(_size.width * _size.height * _Ch);
 
 			_ptr = image_type(
-				(typename image_type::elm_type *) &_data[0],
+				&_data[0],
 				_size.width * sizeof(typename image_type::elm_type),
 				_size.width,
 				_size.height
