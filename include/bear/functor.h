@@ -6,9 +6,20 @@
 
 namespace bear
 {
+	class _base_functor_noexcept
+	{
+	};
+
+	class _base_functor_default
+	{
+	};
+
+	class _base_functor_const
+	{
+	};
 	
-	template<typename _Result, typename ... _Types >
-	class functor;
+	template<typename _Traits, typename _Result, typename ... _Types >
+	class base_functor;
 
 	template<typename _Fun>
 	struct __check_fun
@@ -17,49 +28,147 @@ namespace bear
 	};
 
 	template<typename _Result, typename ... _Types >
-	struct __check_fun<functor<_Result, _Types ...> > {};
+	struct __check_fun<base_functor<_Result, _Types ...> > {};
+
+	////////////////// default ///////////////
+
+	template<typename _Traits, typename _Result, typename ... _Types >
+	class _base_functor_interface
+	{
+	public:
+		virtual _Result run(_Types... _args) = 0;
+		virtual _base_functor_interface* clone() const = 0;
+		virtual void release() noexcept = 0;
+	protected:
+		~_base_functor_interface() {}
+	};
+
+	template<typename _Fun, typename _Traits, typename _Result, typename ... _Types >
+	class _base_functor_container :public _base_functor_interface<_Traits, _Result, _Types ...>
+	{
+		_Fun _fun;
+	public:
+
+		template<typename R_Fun>
+		_base_functor_container(R_Fun&& _f) :_fun(std::forward<R_Fun>(_f)) {}
+
+		_Result run(_Types... _args)
+		{
+			return _fun(static_cast<_Types>(_args)...);
+		}
+
+		_base_functor_interface* clone() const
+		{
+			return new _base_functor_container(_fun);
+		}
+
+		void release() noexcept
+		{
+			delete this;
+		}
+	private:
+		~_base_functor_container() {}
+	};
+
+	////////////////////////////////////////////
+
+
+	////////////////// noexcept ///////////////
 
 	template<typename _Result, typename ... _Types >
-	class functor
+	class _base_functor_interface<_base_functor_noexcept, _Result, _Types ...>
+	{
+	public:
+		virtual _Result run(_Types... _args) noexcept = 0;
+		virtual _base_functor_interface* clone() const = 0;
+		virtual void release() noexcept = 0;
+	protected:
+		~_base_functor_interface() {}
+	};
+
+	template<typename _Fun, typename _Result, typename ... _Types >
+	class _base_functor_container<_Fun, _base_functor_noexcept, _Result, _Types ...>
+		:public _base_functor_interface<_base_functor_noexcept, _Result, _Types ...>
+	{
+		_Fun _fun;
+	public:
+
+		template<typename R_Fun>
+		_base_functor_container(R_Fun&& _f) :_fun(std::forward<R_Fun>(_f)) {}
+
+		_Result run(_Types... _args) noexcept
+		{
+			return _fun(static_cast<_Types>(_args)...);
+		}
+
+		_base_functor_interface* clone() const
+		{
+			return new _base_functor_container(_fun);
+		}
+
+		void release() noexcept
+		{
+			delete this;
+		}
+	private:
+		~_base_functor_container() {}
+	};
+
+	////////////////////////////////////////////
+
+
+	////////////////// const ///////////////
+
+	template<typename _Result, typename ... _Types >
+	class _base_functor_interface<_base_functor_const, _Result, _Types ...>
+	{
+	public:
+		virtual _Result run(_Types... _args) const = 0;
+		virtual _base_functor_interface* clone() const = 0;
+		virtual void release() noexcept = 0;
+	protected:
+		~_base_functor_interface() {}
+	};
+
+	template<typename _Fun, typename _Result, typename ... _Types >
+	class _base_functor_container<_Fun, _base_functor_const, _Result, _Types ...>
+		:public _base_functor_interface<_base_functor_const, _Result, _Types ...>
+	{
+		_Fun _fun;
+	public:
+
+		template<typename R_Fun>
+		_base_functor_container(R_Fun&& _f) :_fun(std::forward<R_Fun>(_f)) {}
+
+		_Result run(_Types... _args) const
+		{
+			return _fun(static_cast<_Types>(_args)...);
+		}
+
+		_base_functor_interface* clone() const
+		{
+			return new _base_functor_container(_fun);
+		}
+
+		void release() noexcept
+		{
+			delete this;
+		}
+	private:
+		~_base_functor_container() {}
+	};
+
+	////////////////////////////////////////////
+
+	template<typename _Traits, typename _Result, typename ... _Types >
+	class base_functor
 	{
 	private:
 
-		class _interface
-		{
-		public:
-			virtual _Result run(_Types... _args) = 0;
-			virtual _interface  * clone() const = 0;
-			virtual void release() noexcept = 0;
-		protected:
-			~_interface() {}
-		};
+		using _interface = _base_functor_interface<_Traits, _Result, _Types ...>;
 
 		template<typename _Fun>
-		class _container :public _interface
-		{
-			_Fun _fun;
-		public:
-
-			template<typename R_Fun>
-			_container(R_Fun && _f) :_fun(std::forward<R_Fun>(_f)) {}
-
-			_Result run(_Types... _args)
-			{
-				return _fun(static_cast<_Types>(_args)...);
-			}
-
-			_interface * clone() const
-			{
-				return new _container(_fun);
-			}
-
-			void release() noexcept
-			{
-				delete this;
-			}
-		private:
-			~_container() {}
-		};
+		using _container = _base_functor_container<_Fun, _Traits, _Result, _Types ...>;
 
 		_interface * _ctn;
 
@@ -74,9 +183,8 @@ namespace bear
 		}
 
 	public:
-		_Result operator()(_Types... _args) const //won't work!
+		_Result operator()(_Types... _args) const
 		{
-			static_assert(false, "functor can't be const!");
 			return _get_ctn()->run(static_cast<_Types>(_args)...);
 		}
 
@@ -84,24 +192,24 @@ namespace bear
 		{
 			if (_ctn == nullptr)
 			{
-				throw bear_exception(exception_type::other_error, "call a empty functor!");
+				throw bear_exception(exception_type::other_error, "call a empty base_functor!");
 			}
 			return _get_ctn()->run(static_cast<_Types>(_args)...);
 		}
 
 		template<typename R_Fun>
-		functor(R_Fun &&_fun, typename __check_fun<typename std::decay<R_Fun>::type>::type _c = 0)
+		base_functor(R_Fun &&_fun, typename __check_fun<typename std::decay<R_Fun>::type>::type _c = 0)
 		{
 			using _Fun = typename std::decay<R_Fun>::type;
-			static_assert(!std::is_same<_Fun, functor>::value, "recursive create");
+			static_assert(!std::is_same<_Fun, base_functor>::value, "recursive create");
 			_ctn = new _container<_Fun>(std::forward<R_Fun>(_fun));
 		}
 
-		functor() : _ctn(0) {}
+		base_functor() : _ctn(0) {}
 
-		functor(const functor &other) : _ctn(other._ctn ? other._ctn->clone() : 0) {}
+		base_functor(const base_functor &other) : _ctn(other._ctn ? other._ctn->clone() : 0) {}
 
-		functor &operator = (const functor &other)
+		base_functor &operator = (const base_functor &other)
 		{
 			if (this == &other)return *this;
 
@@ -119,12 +227,12 @@ namespace bear
 			return *this;
 		}
 
-		functor(functor &&other) : _ctn(other._ctn) noexcept
+		base_functor(base_functor &&other) : _ctn(other._ctn) noexcept
 		{
 			other._ctn = 0;
 		}
 
-		functor &operator = (functor &&other) noexcept
+		base_functor &operator = (base_functor &&other) noexcept
 		{
 			if (this == &other)return *this;
 
@@ -141,11 +249,20 @@ namespace bear
 			return _ctn;
 		}
 
-		~functor()
+		~base_functor()
 		{
 			if (_ctn)_ctn->release();
 		}
 	};
+
+	template<typename _Result, typename ... _Types >
+	using functor = base_functor<_base_functor_default, _Result, _Types ...>;
+
+	template<typename _Result, typename ... _Types >
+	using noexcept_functor = base_functor<_base_functor_noexcept, _Result, _Types ...>;
+
+	template<typename _Result, typename ... _Types >
+	using const_functor = base_functor<_base_functor_default, _Result, _Types ...>;
 
 
 
@@ -192,7 +309,7 @@ namespace bear
 
 	class defer
 	{
-		functor<void> _fun;
+		noexcept_functor<void> _fun;
 
 	public:
 		template<typename Fun>
