@@ -5,7 +5,7 @@
 
 namespace bear
 {
-	void __string_format(std::ostringstream& os, const_string_ptr fmt)
+	inline void __string_format(std::ostringstream& os, const_string_ptr fmt)
 	{
 		auto f = fmt.split('%');
 		if (!f.second.empty())
@@ -15,7 +15,7 @@ namespace bear
 	}
 
 	template<typename _Fst, typename ... _Types>
-	void __string_format(std::ostringstream &os, const_string_ptr fmt, _Fst fst, _Types&& ... _args)
+	inline void __string_format(std::ostringstream &os, const_string_ptr fmt, _Fst fst, _Types&& ... _args)
 	{
 		auto f = fmt.split('%');
 		if (f.second.empty())
@@ -26,7 +26,7 @@ namespace bear
 	}
 
 	template<typename ... _Types>
-	std::string format(const_string_ptr fmt, _Types&& ... _args)
+	inline std::string format(const_string_ptr fmt, _Types&& ... _args)
 	{
 		std::ostringstream os;
 		__string_format(os, fmt, std::forward<_Types>(_args) ...);
