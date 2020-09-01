@@ -139,7 +139,6 @@ namespace bear
 				"element type not compatible!");
 		}
 
-
 		size_t size() const
 		{
 			return _size;
@@ -288,6 +287,20 @@ namespace bear
 	};
 
 
+
+	template<typename _Elm, typename Base>
+	auto ptr_cast(const base_tensor_ptr<Base>& oth)
+	{
+		static_assert(
+			is_memory_compatible<_Elm, typename Base::elm_type>::value,
+			"element type not compatible!");
+
+		using r_type = typename ptr_change_elm<base_tensor_ptr<Base>, _Elm>::type;
+
+
+		return r_type(ptr_cast<_Elm>(oth[0]), oth.size(), oth.move_step());
+	}
+
 	template<size_t _Dim>
 	struct _tensor_clip_at
 	{
@@ -350,35 +363,34 @@ namespace bear
 
 
 	template<typename _Elm>
-	inline auto make_tensor(_Elm * _start, size_t _size)
+	inline auto make_tensor_ptr(_Elm * _start, size_t _size)
 	{
 		return array_ptr<_Elm>(_start, _size);
 	}
 
 	template<typename _T>
-	inline auto make_tensor(const array_ptr<_T> & oth, size_t _size)
+	inline auto make_tensor_ptr(const array_ptr<_T> & oth, size_t _size)
 	{
 		return base_tensor_ptr<array_ptr<_T>>(oth, _size);
 	}
 
 	template<typename _T>
-	inline auto make_tensor(const base_tensor_ptr<_T> & oth, size_t _size)
+	inline auto make_tensor_ptr(const base_tensor_ptr<_T> & oth, size_t _size)
 	{
 		return base_tensor_ptr<base_tensor_ptr<_T>>(oth, _size);
 	}
 
 	template<typename _T>
-	inline auto make_tensor(const array_ptr<_T> & oth, size_t _size, size_t _step)
+	inline auto make_tensor_ptr(const array_ptr<_T> & oth, size_t _size, size_t _step)
 	{
 		return base_tensor_ptr<array_ptr<_T>>(oth, _size, _step);
 	}
 
 	template<typename _T>
-	inline auto make_tensor(const base_tensor_ptr<_T> & oth, size_t _size, size_t _step)
+	inline auto make_tensor_ptr(const base_tensor_ptr<_T> & oth, size_t _size, size_t _step)
 	{
 		return base_tensor_ptr<base_tensor_ptr<_T>>(oth, _size, _step);
 	}
-
 
 
 	template<typename _T1>

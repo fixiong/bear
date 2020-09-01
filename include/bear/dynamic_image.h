@@ -674,9 +674,9 @@ namespace bear
 			{
 				throw bear_exception(exception_type::size_different, "wrong type!");
 			}
-			return make_tensor(
-				make_tensor(
-					make_tensor(
+			return make_tensor_ptr(
+				make_tensor_ptr(
+					make_tensor_ptr(
 						(_Elm *)_info._data,
 						_info._channel_size
 					),
@@ -828,9 +828,9 @@ namespace bear
 			{
 				throw bear_exception(exception_type::size_different, "wrong type!");
 			}
-			return make_tensor(
-				make_tensor(
-					make_tensor(
+			return make_tensor_ptr(
+				make_tensor_ptr(
+					make_tensor_ptr(
 						(_Elm *)_info._data,
 						_info._channel_size
 					),

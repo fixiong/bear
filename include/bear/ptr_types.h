@@ -84,8 +84,6 @@ namespace bear
 	inline const_array_ptr<_Elm> to_ptr(const std::array<_Elm, Size> &_ctn);
 
 
-
-
 	template<typename _Elm, typename _Trt = std::char_traits<typename std::decay<_Elm>::type>>
 	class basic_string_ptr;
 

@@ -11,7 +11,8 @@ namespace bear
 	{
 	public:
 
-		using normal_self = array_ptr<typename std::remove_const<_Elm>::type>;
+		using normal_elm_type = typename std::remove_const<_Elm>::type;
+		using normal_self = array_ptr<normal_elm_type>;
 		using const_self = array_ptr<const _Elm>;
 
 		using array_type = array_ptr;
@@ -40,33 +41,33 @@ namespace bear
 
 	public:
 
-		template<typename _Oe,typename _Alc>
-		array_ptr(const std::vector<_Oe, _Alc> & _ctn) :
+		template<typename _Alc>
+		array_ptr(const std::vector<normal_elm_type, _Alc> & _ctn) :
 			_pointer(_ctn.empty() ? 0 : &_ctn[0]),
 			_size(_ctn.size()) {}
 
-		template<typename _Elm_, size_t Size>
-		array_ptr(const std::array<_Elm_, Size> & _ctn) :
+		template<typename _Alc>
+		array_ptr(std::vector<normal_elm_type, _Alc> & _ctn) :
 			_pointer(_ctn.empty() ? 0 : &_ctn[0]),
 			_size(_ctn.size()) {}
 
-		template<typename _Oe, typename _Trt_>
-		array_ptr(const std::basic_string<_Oe, _Trt_> & _ctn) :
+		template<size_t Size>
+		array_ptr(const std::array<normal_elm_type, Size> & _ctn) :
 			_pointer(_ctn.empty() ? 0 : &_ctn[0]),
 			_size(_ctn.size()) {}
 
-		template<typename _Oe, typename _Alc>
-		array_ptr(std::vector<_Oe, _Alc> & _ctn) :
+		template<size_t Size>
+		array_ptr(std::array<normal_elm_type, Size> & _ctn) :
 			_pointer(_ctn.empty() ? 0 : &_ctn[0]),
 			_size(_ctn.size()) {}
 
-		template<typename _Elm_, size_t Size>
-		array_ptr(std::array<_Elm_, Size> & _ctn) :
+		template<typename _Trt_>
+		array_ptr(const std::basic_string<normal_elm_type, _Trt_> & _ctn) :
 			_pointer(_ctn.empty() ? 0 : &_ctn[0]),
 			_size(_ctn.size()) {}
 
-		template<typename _Oe, typename _Trt_>
-		array_ptr(std::basic_string<_Oe, _Trt_> & _ctn) :
+		template<typename _Trt_>
+		array_ptr(std::basic_string<normal_elm_type, _Trt_> & _ctn) :
 			_pointer(_ctn.empty() ? 0 : &_ctn[0]),
 			_size(_ctn.size()) {}
 
@@ -74,7 +75,7 @@ namespace bear
 		array_ptr(const array_ptr &oth) = default;
 
 		template<typename _Oe_>
-		array_ptr(const array_ptr<_Oe_> &oth) :
+		array_ptr(const array_ptr<_Oe_>& oth) :
 			_pointer(oth.data()),
 			_size(oth.size())
 		{
@@ -232,6 +233,8 @@ namespace bear
 	private:
 	};
 
+
+
 	template<typename _Elm>
 	inline std::vector<typename std::decay<_Elm>::type> 
 		make_container(const array_ptr<_Elm> &arr)
@@ -239,11 +242,20 @@ namespace bear
 		return std::vector<typename std::decay<_Elm>::type>(arr.begin(), arr.end());
 	}
 
-
 	template<typename _Elm>
 	inline auto make_array_ptr(_Elm * _start, size_t _size)
 	{
 		return array_ptr<_Elm>(_start, _size);
+	}
+
+	template<typename _Elm, typename _Oe_>
+	inline auto ptr_cast(const array_ptr<_Oe_>& oth)
+	{
+		static_assert(
+			is_memory_compatible<_Elm, _Oe_>::value,
+			"element type not compatible!");
+
+		return array_ptr<_Elm>((_Elm*)&oth[0], oth.size());
 	}
 
 	template<typename _T1, typename ... _T>

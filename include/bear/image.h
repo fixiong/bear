@@ -231,9 +231,9 @@ namespace bear
 
 		auto to_tensor_3d() const
 		{
-			return make_tensor(
-				make_tensor(
-					make_tensor(
+			return make_tensor_ptr(
+				make_tensor_ptr(
+					make_tensor_ptr(
 						&(*this->data())[0],
 						_Ch
 					),
@@ -320,9 +320,9 @@ namespace bear
 
 		auto to_tensor_3d() const
 		{
-			return make_tensor(
-				make_tensor(
-					make_tensor(
+			return make_tensor_ptr(
+				make_tensor_ptr(
+					make_tensor_ptr(
 						&(*this->data())[0],
 						1
 					),
