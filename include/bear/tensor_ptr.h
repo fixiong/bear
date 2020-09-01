@@ -53,18 +53,6 @@ namespace bear
 		return false;
 	}
 
-	template<typename _T1, typename ... _T>
-	struct __ps_count_arg
-	{
-		static constexpr size_t value = __ps_count_arg<_T...>::value + 1;
-	};
-
-	template<typename _T1>
-	struct __ps_count_arg<_T1>
-	{
-		static constexpr size_t value = 1;
-	};
-
 	inline void __pack_tensor_size(tensor_size<1> &pk, size_t sz)
 	{
 		pk[0] = sz;
@@ -84,9 +72,6 @@ namespace bear
 		__pack_tensor_size(ret, sizes ...);
 		return ret;
 	}
-
-
-
 
 	template<typename _Base>
 	class base_tensor_ptr
@@ -238,7 +223,7 @@ namespace bear
 		auto plan() const
 		{
 			if (!is_plan())return array_ptr<elm_type>();
-			return make_array(_pointer->data(), total_size());
+			return make_array_ptr(_pointer->data(), total_size());
 		}
 
 		template<typename _Fn>

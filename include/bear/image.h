@@ -116,7 +116,7 @@ namespace bear
 			size_t _width,
 			size_t _height) :
 			base(
-				make_array(_data, _width),
+				make_array_ptr(_data, _width),
 				_height,
 				_width_step
 				) {}

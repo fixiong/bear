@@ -240,14 +240,30 @@ namespace bear
 	}
 
 
-
-
 	template<typename _Elm>
-	inline auto make_array(_Elm * _start, size_t _size)
+	inline auto make_array_ptr(_Elm * _start, size_t _size)
 	{
 		return array_ptr<_Elm>(_start, _size);
 	}
 
+	template<typename _T1, typename ... _T>
+	struct __ps_count_arg
+	{
+		static constexpr size_t value = __ps_count_arg<_T...>::value + 1;
+	};
+
+	template<typename _T1>
+	struct __ps_count_arg<_T1>
+	{
+		static constexpr size_t value = 1;
+	};
+
+	template<typename _T1, typename ... _Type>
+	inline auto make_array(_T1&& t1, _Type&& ... t)
+	{
+		using _RType = std::array<_T1, __ps_count_arg<_T1, _Type ...>::value>;
+		return _RType{ std::forward<_T1>(t1), std::forward<_Type>(t) ... };
+	}
 
 
 
@@ -255,28 +271,28 @@ namespace bear
 	inline array_ptr<_Elm> to_ptr(std::vector<_Elm, _Alc> & _ctn)
 	{
 		if (_ctn.empty())return array_ptr<_Elm>();
-		return make_array(&_ctn[0], _ctn.size());
+		return make_array_ptr(&_ctn[0], _ctn.size());
 	}
 
 	template<typename _Elm, typename _Alc>
 	inline const_array_ptr<_Elm> to_ptr(const std::vector<_Elm, _Alc> & _ctn)
 	{
 		if (_ctn.empty())return const_array_ptr<_Elm>();
-		return make_array(&_ctn[0], _ctn.size());
+		return make_array_ptr(&_ctn[0], _ctn.size());
 	}
 
 	template<typename _Elm, size_t Size>
 	inline array_ptr<_Elm> to_ptr(std::array<_Elm, Size> & _ctn)
 	{
 		if (_ctn.empty())return array_ptr<_Elm>();
-		return make_array(&_ctn[0], _ctn.size());
+		return make_array_ptr(&_ctn[0], _ctn.size());
 	}
 
 	template<typename _Elm, size_t Size>
 	inline const_array_ptr<_Elm> to_ptr(const std::array<_Elm, Size> &_ctn)
 	{
 		if (_ctn.empty())return const_array_ptr<_Elm>();
-		return make_array(&_ctn[0], _ctn.size());
+		return make_array_ptr(&_ctn[0], _ctn.size());
 	}
 
 
