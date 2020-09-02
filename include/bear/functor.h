@@ -227,7 +227,7 @@ namespace bear
 			return *this;
 		}
 
-		base_functor(base_functor &&other) : _ctn(other._ctn) noexcept
+		base_functor(base_functor &&other) : _ctn(other._ctn)
 		{
 			other._ctn = 0;
 		}
