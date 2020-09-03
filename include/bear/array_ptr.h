@@ -280,13 +280,20 @@ namespace bear
 
 
 	template<typename _T1, typename ... _Type>
-	inline auto make_array_t(_T1 t1, _Type&& ... t)
+	inline auto make_array_t(_T1&& t1, _Type&& ... t)
 	{
 		using _Elm = typename std::decay<_T1>::type;
 		using _RType = std::array<_Elm, __ps_count_arg<_T1, _Type ...>::value>;
 		return _RType{std::move(t1), std::forward<_Type>(t) ... };
 	}
 
+	template<typename _T1, typename ... _Type>
+	inline auto make_array_t(const _T1& t1, _Type&& ... t)
+	{
+		using _Elm = typename std::decay<_T1>::type;
+		using _RType = std::array<_Elm, __ps_count_arg<_T1, _Type ...>::value>;
+		return _RType{ t1, std::forward<_Type>(t) ... };
+	}
 
 
 	template<typename _Elm, typename _Alc>
