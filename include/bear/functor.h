@@ -57,7 +57,7 @@ namespace bear
 			return _fun(static_cast<_Types>(_args)...);
 		}
 
-		_base_functor_interface* clone() const
+		_base_functor_interface<_Traits, _Result, _Types ...>* clone() const
 		{
 			return new _base_functor_container(_fun);
 		}
@@ -101,7 +101,7 @@ namespace bear
 			return _fun(static_cast<_Types>(_args)...);
 		}
 
-		_base_functor_interface* clone() const
+		_base_functor_interface<_base_functor_noexcept, _Result, _Types ...>* clone() const
 		{
 			return new _base_functor_container(_fun);
 		}
@@ -145,7 +145,7 @@ namespace bear
 			return _fun(static_cast<_Types>(_args)...);
 		}
 
-		_base_functor_interface* clone() const
+		_base_functor_interface<_base_functor_const, _Result, _Types ...>* clone() const
 		{
 			return new _base_functor_container(_fun);
 		}

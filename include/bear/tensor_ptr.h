@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "ptr_traits.h"
 #include "array_ptr.h"
 #include "array_iterator.h"
 
@@ -295,10 +296,7 @@ namespace bear
 			is_memory_compatible<_Elm, typename Base::elm_type>::value,
 			"element type not compatible!");
 
-		using r_type = typename ptr_change_elm<base_tensor_ptr<Base>, _Elm>::type;
-
-
-		return r_type(ptr_cast<_Elm>(oth[0]), oth.size(), oth.move_step());
+		return typename ptr_change_elm<base_tensor_ptr<Base>, _Elm>::type(ptr_cast<_Elm>(oth[0]), oth.size(), oth.move_step());
 	}
 
 	template<size_t _Dim>
