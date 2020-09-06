@@ -450,16 +450,6 @@ namespace bear
 			return _ptr.pixel(x, y);
 		}
 
-		friend const image_type &to_ptr(image &img)
-		{
-			return img._ptr;
-		}
-
-		friend typename image_type::const_self to_ptr(const image &img)
-		{
-			return img._ptr;
-		}
-
 		std::pair<std::vector<_Elm, Alloc>, image_type> decompose()
 		{
 			auto tmp = _ptr;
@@ -621,6 +611,18 @@ namespace bear
 			return _ptr.back();
 		}
 	};
+
+	template<typename _Elm, size_t _Dim, typename Alloc>
+	inline image_ptr<_Elm, _Dim> to_ptr(image<_Elm, _Dim, Alloc>& img)
+	{
+		return img;
+	}
+
+	template<typename _Elm, size_t _Dim, typename Alloc>
+	inline const_image_ptr<_Elm, _Dim> to_ptr(const image<_Elm, _Dim, Alloc>& img)
+	{
+		return img;
+	}
 
 	template<typename _Elm, size_t _Ch, typename Alloc>
 	inline image_size size(const image<_Elm, _Ch, Alloc> & ts)

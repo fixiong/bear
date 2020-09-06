@@ -269,10 +269,10 @@ namespace bear
 	inline _Stm && operator << (_Stm && stm, basic_string_ptr<_Elm, _Trt> arr);
 
 	template<typename _Elm, size_t _Dim, typename Alloc>
-	inline tensor_ptr<_Elm, _Dim> &to_ptr(tensor<_Elm, _Dim, Alloc> &img);
+	inline tensor_ptr<_Elm, _Dim> to_ptr(tensor<_Elm, _Dim, Alloc> &img);
 
 	template<typename _Elm, size_t _Dim, typename Alloc>
-	inline const_tensor_ptr<_Elm, _Dim> &to_ptr(const tensor<_Elm, _Dim, Alloc> &img);
+	inline const_tensor_ptr<_Elm, _Dim> to_ptr(const tensor<_Elm, _Dim, Alloc> &img);
 
 
 	template<typename _Elm, size_t _Ch = 1, class Alloc = std::allocator<_Elm> >
@@ -293,10 +293,10 @@ namespace bear
 		make_container(const image_ptr<_Elm, _Ch> &ptr);
 
 	template<typename _Elm, size_t _Dim, typename Alloc>
-	inline image_ptr<_Elm, _Dim> &to_ptr(image<_Elm, _Dim, Alloc> &img);
+	inline image_ptr<_Elm, _Dim> to_ptr(image<_Elm, _Dim, Alloc> &img);
 
 	template<typename _Elm, size_t _Dim, typename Alloc>
-	inline const_image_ptr<_Elm, _Dim> &to_ptr(const image<_Elm, _Dim, Alloc> &img);
+	inline const_image_ptr<_Elm, _Dim> to_ptr(const image<_Elm, _Dim, Alloc> &img);
 
 	class char_bool;
 
