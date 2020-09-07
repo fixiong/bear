@@ -104,7 +104,7 @@ namespace bear
 		}
 
 
-		friend const ptr_type &to_ptr(tensor &img)
+		friend const ptr_type to_ptr(tensor &img)
 		{
 			return img._ptr;
 		}

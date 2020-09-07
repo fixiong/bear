@@ -660,7 +660,7 @@ namespace bear
 			{
 				throw bear_exception(exception_type::size_different, "wrong type!");
 			}
-			return image_ptr<_Elm, _Ch>((_Elm *)_info._data, _info._width_step, _info._width, _info._height);
+			return image_ptr<_Elm, _Ch>(( typename image_ptr<_Elm, _Ch>::channel_type*)_info._data, _info._width_step, _info._width, _info._height);
 		}
 
 		template<typename _Elm>
@@ -812,7 +812,7 @@ namespace bear
 			{
 				assert(et == _info._elm_type);
 			}
-			return image_ptr<_Elm, _Ch>((_Elm *)_info._data, _info._width_step, _info._width, _info._height);
+			return image_ptr<_Elm, _Ch>((typename image_ptr<_Elm, _Ch>::channel_type*)_info._data, _info._width_step, _info._width, _info._height);
 		}
 
 		template<typename _Elm>
