@@ -185,6 +185,10 @@ namespace bear
 	public:
 		_Result operator()(_Types... _args) const
 		{
+			if (_ctn == nullptr)
+			{
+				throw bear_exception(exception_type::other_error, "call a empty base_functor!");
+			}
 			return _get_ctn()->run(static_cast<_Types>(_args)...);
 		}
 
