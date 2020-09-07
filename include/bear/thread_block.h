@@ -24,6 +24,8 @@ namespace bear
 
 		bool outer_working = true;
 
+		bool working = true;
+
 		template<typename ..._T>
 		void init(_T&& ... t)
 		{
@@ -74,6 +76,7 @@ namespace bear
 		{
 			work = std::forward<_T>(t);
 			outer_working = true;
+			working = true;
 			lock.unlock();
 		}
 
@@ -84,6 +87,7 @@ namespace bear
 				lock.lock();
 				inner_working = true;
 				work();
+				working = false;
 				rev_lock.lock();
 				inner_working = false;
 				lock.unlock();
@@ -161,7 +165,7 @@ namespace bear
 
 		bool running()
 		{
-			return m_data->outer_working;
+			return m_data->working;
 		}
 
 		void wait()
