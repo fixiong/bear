@@ -226,12 +226,14 @@ namespace bear
 			}
 		}
 
-		friend size_t size(const array_ptr<_Elm> & _arr)
-		{
-			return _arr.size();
-		}
 	private:
 	};
+
+	template<typename _Elm>
+	inline size_t size(const array_ptr<_Elm>& arr)
+	{
+		return arr.size();
+	}
 
 
 

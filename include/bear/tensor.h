@@ -103,17 +103,6 @@ namespace bear
 			return _ptr;
 		}
 
-
-		friend const ptr_type to_ptr(tensor &img)
-		{
-			return img._ptr;
-		}
-
-		friend typename ptr_type::const_self to_ptr(const tensor &img)
-		{
-			return img._ptr;
-		}
-
 		std::pair<std::vector<_Elm, Alloc>, ptr_type> decompose()
 		{
 			auto tmp = _ptr;
@@ -217,6 +206,18 @@ namespace bear
 			return _ptr.back();
 		}
 	};
+
+	template<typename _Elm, size_t _Dim, typename Alloc>
+	inline tensor_ptr<_Elm, _Dim> to_ptr(tensor<_Elm, _Dim, Alloc>& img)
+	{
+		return img;
+	}
+
+	template<typename _Elm, size_t _Dim, typename Alloc>
+	inline const_tensor_ptr<_Elm, _Dim> to_ptr(const tensor<_Elm, _Dim, Alloc>& img)
+	{
+		return img;
+	}
 
 	template<typename _Elm, size_t _Dim, typename Alloc>
 	inline tensor_size<_Dim> size(const tensor<_Elm, _Dim, Alloc> & ts)
