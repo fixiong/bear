@@ -75,7 +75,7 @@ namespace bear
 			lock.unlock();
 		}
 
-		bool _pick()
+		boid _pick()
 		{
 			lock.lock();
 			while (!closed)
