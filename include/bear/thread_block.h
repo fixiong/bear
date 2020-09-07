@@ -25,12 +25,13 @@ namespace bear
 		bool outer_working = true;
 
 		template<typename ..._T>
-		explicit thread_block_data(_T&& ... t)
+		void init(_T&& ... t)
 		{
 			rev_lock.lock();
 			thread = std::thread(std::forward<_T>(t) ...);
 			_wait();
 		}
+
 
 		~thread_block_data()
 		{
@@ -60,6 +61,7 @@ namespace bear
 
 		void _wait()
 		{
+			if (!outer_working) return;
 			while (!inner_working) std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			rev_lock.unlock();
 			lock.lock();
@@ -75,19 +77,18 @@ namespace bear
 			lock.unlock();
 		}
 
-		boid _pick()
+		void _pick()
 		{
-			lock.lock();
 			while (!closed)
 			{
+				lock.lock();
+				inner_working = true;
 				work();
 				rev_lock.lock();
 				inner_working = false;
 				lock.unlock();
 				rev_lock.unlock();
 				while(outer_working) std::this_thread::sleep_for(std::chrono::milliseconds(1));
-				lock.lock();
-				inner_working = true;
 			}
 			lock.unlock();
 		}
@@ -120,6 +121,7 @@ namespace bear
 		shared_smp_ptr<thread_block_data, true> m_data;
 		thread_block(int, int)
 		{
+			m_data = m_data.create();
 		}
 	public:
 
@@ -128,7 +130,7 @@ namespace bear
 		{
 			_Res* ptr;
 			thread_block block(0,0);
-			block.m_data.create(
+			block.m_data->init(
 				thread_block_data::vork_routine_res_create<_Res>,
 				block.m_data,
 				&ptr);
@@ -142,7 +144,7 @@ namespace bear
 			using res_t = typename std::decay<decltype(mak())>::type;
 			res_t* ptr;
 			thread_block block(0, 0);
-			block.m_data.create(
+			block.m_data->init(
 				thread_block_data::vork_routine_res_maker<_Maker&&, res_t>,
 				block.m_data,
 				std::forward<_Maker>(mak)
@@ -153,7 +155,8 @@ namespace bear
 
 		thread_block()
 		{
-			m_data.create(thread_block_data::vork_routine, m_data);
+			m_data = m_data.create();
+			m_data->init(thread_block_data::vork_routine, m_data);
 		}
 
 		bool running()
