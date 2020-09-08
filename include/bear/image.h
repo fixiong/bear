@@ -377,8 +377,23 @@ namespace bear
 	public:
 		image() {}
 
-		image(image&& oth) = default;
-		image& operator = (image&& oth) = default;
+		image(image&& oth):
+			_data(std::move(oth._data)),
+			_ptr(oth._ptr)
+		{
+			oth._ptr = image_type();
+		}
+		image& operator = (image&& oth)
+		{
+			if (this == &oth) return *this;
+
+			_data = std::move(oth._data);
+			_ptr = oth._ptr;
+
+			oth._ptr = image_type();
+
+			return *this;
+		}
 
 		image(const image& oth):
 			_data(oth._data),
@@ -388,6 +403,7 @@ namespace bear
 				oth.width(),
 				oth.height())
 		{
+
 		}
 
 		image& operator = (const image& oth)

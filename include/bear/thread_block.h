@@ -44,8 +44,6 @@ namespace bear
 		void _run(_T&& t)
 		{
 			work = std::forward<_T>(t);
-			outer_working = true;
-			outer_working = true;
 			working = true;
 
 			for (;;)
@@ -53,6 +51,7 @@ namespace bear
 				std::unique_lock<std::mutex> lock(mtx);
 				if (!inner_working)
 				{
+					outer_working = true;
 					inner_signal.notify_one();
 					return;
 				}
@@ -67,8 +66,8 @@ namespace bear
 				std::unique_lock<std::mutex> lock(mtx);
 				if (inner_working)
 				{
-					inner_signal.notify_one();
 					outer_working = false;
+					inner_signal.notify_one();
 					return;
 				}
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -86,9 +85,15 @@ namespace bear
 				inner_working = true;
 				work();
 				working = false;
-				inner_signal.wait(lock);
+				inner_signal.wait(lock, [this]()
+					{
+						return !outer_working;
+					});
 				inner_working = false;
-				inner_signal.wait(lock);
+				inner_signal.wait(lock, [this]()
+					{
+						return outer_working;
+					});
 			}
 		}
 

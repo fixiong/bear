@@ -61,8 +61,24 @@ namespace bear
 
 		tensor() {}
 
-		tensor(tensor&& oth) = default;
-		tensor& operator = (tensor&& oth) = default;
+		tensor(tensor&& oth):
+			_data(std::move(oth._data)),
+			_ptr(oth._ptr)
+		{
+			oth._ptr = ptr_type();
+		}
+
+		tensor& operator = (tensor&& oth)
+		{
+			if (this == &oth) return *this;
+
+			_data = std::move(oth._data);
+			_ptr = oth._ptr;
+
+			oth._ptr = ptr_type();
+
+			return *this;
+		}
 
 		tensor(const tensor& oth) :
 			_data(oth._data),
