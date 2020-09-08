@@ -377,6 +377,34 @@ namespace bear
 	public:
 		image() {}
 
+		image(image&& oth) = default;
+		image& operator = (image&& oth) = default;
+
+		image(const image& oth):
+			_data(oth._data),
+			_ptr(
+				&_data[0],
+				oth.width() * sizeof(typename image_type::elm_type),
+				oth.width(),
+				oth.height())
+		{
+		}
+
+		image& operator = (const image& oth)
+		{
+			if (this == &oth) return *this;
+
+			_data = oth._data;
+			_ptr = image_type(
+				&_data[0],
+				oth.width() * sizeof(typename image_type::elm_type),
+				oth.width(),
+				oth.height());
+
+			return *this;
+		}
+		
+
 		image(data_type && __data, image_type ptr) :
 			_data(std::move(__data)),
 			_ptr(ptr)

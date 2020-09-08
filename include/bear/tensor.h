@@ -61,6 +61,25 @@ namespace bear
 
 		tensor() {}
 
+		tensor(tensor&& oth) = default;
+		tensor& operator = (tensor&& oth) = default;
+
+		tensor(const tensor& oth) :
+			_data(oth._data),
+			_ptr(&_data[0], bear::size(oth._ptr))
+		{
+		}
+
+		tensor& operator = (const tensor& oth)
+		{
+			if (this == &oth) return *this;
+
+			_data = oth._data;
+			_ptr = image_type(&_data[0], bear::size(oth._ptr));
+
+			return *this;
+		}
+
 		template<typename ... _T>
 		tensor(_T ... sizes) :
 			_data(_total_size(sizes ...)),

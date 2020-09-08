@@ -14,7 +14,6 @@ namespace bear
 		std::thread thread;
 		std::mutex mtx;
 		std::condition_variable inner_signal;
-		std::condition_variable outer_signal;
 		bear::functor<void> work;
 
 		bool inited = false;
