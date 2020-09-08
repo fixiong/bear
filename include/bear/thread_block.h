@@ -1,7 +1,7 @@
 #pragma once
 
 #include <thread>
-#include <mutex>
+#include <condition_variable>
 #include <bear/functor.h>
 #include <bear/bear_exception.h>
 #include <bear/simple_ptr.h>
@@ -11,64 +11,34 @@ namespace bear
 {
 	class thread_block_data
 	{
-		std::thread::id belong = std::this_thread::get_id();
-		std::mutex lock;
-		std::mutex rev_lock;
-		bool inner_working = false;
 		std::thread thread;
-		functor<void> work = []() {};
+		std::mutex mtx;
+		std::condition_variable inner_signal;
+		std::condition_variable outer_signal;
+		bear::functor<void> work;
 
+		bool inited = false;
 		bool closed = false;
+		bool inner_working = false;
+		bool outer_working = false;
 
 	public:
 
-		bool outer_working = true;
-
-		bool working = true;
+		bool working = false;
 
 		template<typename ..._T>
 		void init(_T&& ... t)
 		{
-			rev_lock.lock();
 			thread = std::thread(std::forward<_T>(t) ...);
-			_wait();
+			while (!inited) std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			std::unique_lock<std::mutex> lock(mtx);
 		}
-
 
 		~thread_block_data()
 		{
-			try
-			{
-				check_thread();
-
-				closed = true;
-
-				_wait();
-				_run([]() {});
-			}
-			catch (const bear::bear_exception& e)
-			{
-				std::cout << e.what();
-			}
-		}
-
-		void check_thread()
-		{
-			if (belong != std::this_thread::get_id())
-			{
-				throw bear_exception(exception_type::multithread_error,
-					"can't access thread_block from another thread!");
-			}
-		}
-
-		void _wait()
-		{
-			if (!outer_working) return;
-			while (!inner_working) std::this_thread::sleep_for(std::chrono::milliseconds(1));
-			rev_lock.unlock();
-			lock.lock();
-			outer_working = false;
-			rev_lock.lock();
+			_wait();
+			closed = true;
+			_run([]() {});
 		}
 
 		template<typename _T>
@@ -76,25 +46,51 @@ namespace bear
 		{
 			work = std::forward<_T>(t);
 			outer_working = true;
+			outer_working = true;
 			working = true;
-			lock.unlock();
+
+			for (;;)
+			{
+				std::unique_lock<std::mutex> lock(mtx);
+				if (!inner_working)
+				{
+					inner_signal.notify_one();
+					return;
+				}
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			}
 		}
+
+		void _wait()
+		{
+			for (;;)
+			{
+				std::unique_lock<std::mutex> lock(mtx);
+				if (inner_working)
+				{
+					inner_signal.notify_one();
+					outer_working = false;
+					return;
+				}
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			}
+		}
+
 
 		void _pick()
 		{
+			std::unique_lock<std::mutex> lock(mtx);
+			inited = true;
+			inner_signal.wait(lock);
 			while (!closed)
 			{
-				lock.lock();
 				inner_working = true;
 				work();
 				working = false;
-				rev_lock.lock();
+				inner_signal.wait(lock);
 				inner_working = false;
-				lock.unlock();
-				rev_lock.unlock();
-				while(outer_working) std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				inner_signal.wait(lock);
 			}
-			lock.unlock();
 		}
 
 		static void vork_routine(shared_smp_ptr<thread_block_data, true> data)
@@ -170,16 +166,12 @@ namespace bear
 
 		void wait()
 		{
-			m_data->check_thread();
-
 			m_data->_wait();
 		}
 
 		template<typename _T>
 		void run(_T&& work)
 		{
-			m_data->check_thread();
-
 			m_data->_wait();
 			m_data->_run(std::forward<_T>(work));
 		}
