@@ -48,12 +48,14 @@ namespace bear
 
 			for (;;)
 			{
-				std::unique_lock<std::mutex> lock(mtx);
-				if (!inner_working)
 				{
-					outer_working = true;
-					inner_signal.notify_one();
-					return;
+					std::unique_lock<std::mutex> lock(mtx);
+					if (!inner_working)
+					{
+						outer_working = true;
+						inner_signal.notify_one();
+						return;
+					}
 				}
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
@@ -63,12 +65,14 @@ namespace bear
 		{
 			for (;;)
 			{
-				std::unique_lock<std::mutex> lock(mtx);
-				if (inner_working)
 				{
-					outer_working = false;
-					inner_signal.notify_one();
-					return;
+					std::unique_lock<std::mutex> lock(mtx);
+					if (inner_working)
+					{
+						outer_working = false;
+						inner_signal.notify_one();
+						return;
+					}
 				}
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}

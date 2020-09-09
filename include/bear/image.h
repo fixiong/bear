@@ -106,7 +106,7 @@ namespace bear
 		template<typename _Oe>
 		base_image_ptr(const base_image_ptr<_Oe> &oth) :base(oth)
 		{
-			static_assert(std::is_convertible<_Oe *, _Elm *>::value, "element type not compatible!");
+			//static_assert(std::is_convertible<_Oe *, _Elm *>::value, "element type not compatible!");
 			static_assert(sizeof(_Elm) == sizeof(_Oe), "element size is different!");
 		}
 
