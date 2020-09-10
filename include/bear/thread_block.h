@@ -63,6 +63,7 @@ namespace bear
 
 		void _wait()
 		{
+			if (!outer_working) return;
 			for (;;)
 			{
 				{
