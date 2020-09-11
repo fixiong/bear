@@ -29,8 +29,12 @@ namespace bear
 		void init(_T&& ... t)
 		{
 			thread = std::thread(std::forward<_T>(t) ...);
-			while (!inited) std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
 			std::unique_lock<std::mutex> lock(mtx);
+			inner_signal.wait(lock, [this]()
+				{
+					return inited;
+				});
 		}
 
 		~thread_block_data()
@@ -46,37 +50,26 @@ namespace bear
 			work = std::forward<_T>(t);
 			working = true;
 
-			for (;;)
-			{
+			std::unique_lock<std::mutex> lock(mtx);
+			inner_signal.wait(lock, [this]()
 				{
-					std::unique_lock<std::mutex> lock(mtx);
-					if (!inner_working)
-					{
-						outer_working = true;
-						inner_signal.notify_one();
-						return;
-					}
-				}
-				std::this_thread::sleep_for(std::chrono::milliseconds(1));
-			}
+					return !inner_working;
+				});
+			outer_working = true;
+			inner_signal.notify_one();
 		}
 
 		void _wait()
 		{
 			if (!outer_working) return;
-			for (;;)
-			{
+
+			std::unique_lock<std::mutex> lock(mtx);
+			inner_signal.wait(lock, [this]()
 				{
-					std::unique_lock<std::mutex> lock(mtx);
-					if (inner_working)
-					{
-						outer_working = false;
-						inner_signal.notify_one();
-						return;
-					}
-				}
-				std::this_thread::sleep_for(std::chrono::milliseconds(1));
-			}
+					return inner_working;
+				});
+			outer_working = false;
+			inner_signal.notify_one();
 		}
 
 
@@ -84,17 +77,20 @@ namespace bear
 		{
 			std::unique_lock<std::mutex> lock(mtx);
 			inited = true;
+			inner_signal.notify_one();
 			inner_signal.wait(lock);
 			while (!closed)
 			{
 				inner_working = true;
 				work();
 				working = false;
+				inner_signal.notify_one();
 				inner_signal.wait(lock, [this]()
 					{
 						return !outer_working;
 					});
 				inner_working = false;
+				inner_signal.notify_one();
 				inner_signal.wait(lock, [this]()
 					{
 						return outer_working;
