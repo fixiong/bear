@@ -120,7 +120,7 @@ namespace bear
 		using type = _T;
 	};
 
-	template<typename _Ptr, typename _Elm>
+	template<typename _Ptr, typename _Elm, bool _ICD_ARR = true>
 	struct ptr_change_elm
 	{
 		using type = _Elm;
@@ -131,10 +131,10 @@ namespace bear
 	};
 
 	template<typename _Oe, size_t _Sz, typename _Elm>
-	struct ptr_change_elm<std::array<_Oe,_Sz>,_Elm>
+	struct ptr_change_elm<std::array<_Oe,_Sz>,_Elm,true>
 	{
 		using type = std::array<
-			typename ptr_change_elm<_Oe, _Elm>::type, _Sz>;
+			typename ptr_change_elm<_Oe, _Elm, true>::type, _Sz>;
 
 		static type create(const std::array<_Oe, _Sz> &)
 		{
@@ -143,10 +143,10 @@ namespace bear
 	};
 
 	template<typename _Oe, size_t _Sz, typename _Elm>
-	struct ptr_change_elm<const std::array<_Oe, _Sz>, _Elm>
+	struct ptr_change_elm<const std::array<_Oe, _Sz>, _Elm,true>
 	{
 		using _type = std::array<typename ptr_change_elm<_Oe,
-			typename std::remove_const<_Elm>::type>::type, _Sz>;
+			typename std::remove_const<_Elm>::type, true>::type, _Sz>;
 
 		using type = typename std::conditional<
 			std::is_const<_Elm>::value,
@@ -159,10 +159,10 @@ namespace bear
 		}
 	};
 
-	template<typename _Oe, typename _Elm>
-	struct ptr_change_elm<array_ptr<_Oe>, _Elm>
+	template<typename _Oe, typename _Elm, bool _ICD_ARR>
+	struct ptr_change_elm<array_ptr<_Oe>, _Elm, _ICD_ARR>
 	{
-		using type = array_ptr<typename ptr_change_elm<_Oe, _Elm>::type>;
+		using type = array_ptr<typename ptr_change_elm<_Oe, _Elm, _ICD_ARR>::type>;
 
 		static auto create(const array_ptr<_Oe> & other)
 		{
@@ -170,10 +170,10 @@ namespace bear
 		}
 	};
 
-	template<typename _Bs, typename _Elm>
-	struct ptr_change_elm<base_tensor_ptr<_Bs>, _Elm>
+	template<typename _Bs, typename _Elm, bool _ICD_ARR>
+	struct ptr_change_elm<base_tensor_ptr<_Bs>, _Elm, _ICD_ARR>
 	{
-		using type = base_tensor_ptr<typename ptr_change_elm<_Bs, _Elm>::type>;
+		using type = base_tensor_ptr<typename ptr_change_elm<_Bs, _Elm, _ICD_ARR>::type>;
 
 		static auto create(const base_tensor_ptr<_Bs> & other)
 		{
@@ -182,10 +182,10 @@ namespace bear
 	};
 
 
-	template<typename _Oe, size_t _Ch, typename _Elm>
-	struct ptr_change_elm<image_ptr<_Oe,_Ch>, _Elm>
+	template<typename _Oe, size_t _Ch, typename _Elm, bool _ICD_ARR>
+	struct ptr_change_elm<image_ptr<_Oe,_Ch>, _Elm, _ICD_ARR>
 	{
-		using type = image_ptr<typename ptr_change_elm<_Oe, _Elm>::type,_Ch>;
+		using type = image_ptr<typename ptr_change_elm<_Oe, _Elm, _ICD_ARR>::type,_Ch>;
 
 		static type create(const image_ptr<_Oe, _Ch> & other)
 		{
