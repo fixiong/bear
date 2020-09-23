@@ -6,6 +6,10 @@
 
 namespace bear
 {
+    inline void ____dummy(int)
+    {
+    }
+
 	class _base_functor_noexcept
 	{
 	};
@@ -204,6 +208,7 @@ namespace bear
 		template<typename R_Fun>
 		base_functor(R_Fun &&_fun, typename __check_fun<typename std::decay<R_Fun>::type>::type _c = 0)
 		{
+                    ____dummy(_c);
 			using _Fun = typename std::decay<R_Fun>::type;
 			static_assert(!std::is_same<_Fun, base_functor>::value, "recursive create");
 			_ctn = new _container<_Fun>(std::forward<R_Fun>(_fun));

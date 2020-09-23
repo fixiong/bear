@@ -380,6 +380,11 @@ namespace bear
 		return to_ptr(oth).clip(start, end);
 	}
 
+        template<typename T>
+        inline void _____dummy(T)
+        {
+        }
+
 	template<typename _T1, typename _T2>
 	inline void copy(_T1 && dst, _T2 && src
 
@@ -390,6 +395,7 @@ namespace bear
 
 	)
 	{
+            _____dummy(_);
 		using d_trait = ptr_traits<typename std::decay<decltype(to_ptr(dst))>::type>;
 		using s_trait = ptr_traits<typename std::decay<decltype(to_ptr(src))>::type>;
 
