@@ -126,7 +126,7 @@ namespace bear
 		template<typename _Oe, typename _Trt_>
 		basic_string_ptr(std::basic_string<_Oe, _Trt_> & _ctn) : base(_ctn) {}
 
-		inline auto split(_Elm c) const
+		inline auto _split(_Elm c) const
 		{
 			auto bg = base::begin();
 			auto pos = _Trt::find(bg, base::size(), c);
@@ -135,7 +135,7 @@ namespace bear
 
 			return std::make_pair(
 				basic_string_ptr(bg, pos - bg),
-				basic_string_ptr(pos + 1, base::end() - pos - 1));
+				basic_string_ptr(pos, base::end() - pos));
 		}
 
 		std::basic_string<typename std::decay<_Elm>::type, _Trt> to_string() const{
@@ -393,9 +393,9 @@ namespace bear
 
 		if (oth.empty())return ret;
 
-		auto pr = oth.split(c);
+		auto pr = oth._split(c);
 
-		for (; !pr.second.empty(); pr = pr.second.split(c))
+		for (; !pr.second.empty(); pr = pr.second.clip(1,pr.second.size())._split(c))
 		{
 			ret.push_back(pr.first);
 		}
