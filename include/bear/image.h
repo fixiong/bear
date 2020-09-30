@@ -454,15 +454,16 @@ namespace bear
 		{
 		}
 
-		image &operator = (const image_type& oth)
+		image &operator = (typename image_type::const_self oth)
 		{
 			if (_ptr.width() != oth.width() ||
-				_ptr.height != oth.height())
+				_ptr.height() != oth.height())
 			{
-				resize_canvas(oth.size());
+				resize_canvas(bear::size(oth));
 			}
 
 			copy(_ptr, oth);
+			return *this;
 		}
 
 		bool empty() const
