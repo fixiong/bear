@@ -85,12 +85,12 @@ namespace bear
 		size_t _channel_size;
 		data_type _elm_type;
 		size_t _elm_size;
-		char * _data;
+		char* _data;
 		size_t _width_step;
 	};
-	
+
 	template<typename _Img>
-	inline dynamic_image_info get_image_info(const _Img & ptr, data_type dt)
+	inline dynamic_image_info get_image_info(const _Img& ptr, data_type dt)
 	{
 		dynamic_image_info ret;
 
@@ -100,14 +100,14 @@ namespace bear
 
 		ret._elm_type = dt;
 		ret._elm_size = ptr.elm_size();
-		ret._data = (char *)ptr.data();
+		ret._data = (char*)ptr.data();
 		ret._width_step = ptr.move_step();
 
 		return ret;
 	}
 
 	template<typename _Elm>
-	inline dynamic_image_info get_image_info(const base_tensor_ptr<_Elm> & ptr)
+	inline dynamic_image_info get_image_info(const base_tensor_ptr<_Elm>& ptr)
 	{
 		dynamic_image_info ret;
 
@@ -117,7 +117,7 @@ namespace bear
 
 		ret._elm_type = data_type_traits<typename std::decay<typename base_tensor_ptr<_Elm>::elm_type>::type>::value;
 		ret._elm_size = sizeof(typename base_tensor_ptr<_Elm>::elm_type);
-		ret._data = (char *)ptr.data();
+		ret._data = (char*)ptr.data();
 		ret._width_step = ptr.move_step();
 
 		return ret;
@@ -127,7 +127,7 @@ namespace bear
 
 #if CV_MAJOR_VERSION < 3
 
-	inline dynamic_image_info get_image_info(const IplImage &img)
+	inline dynamic_image_info get_image_info(const IplImage& img)
 	{
 		dynamic_image_info ret;
 
@@ -137,13 +137,13 @@ namespace bear
 
 		ret._elm_type = image_unknown_type;
 		ret._elm_size = img.depth >> 3;
-		ret._data = (char *)img.imageData;
+		ret._data = (char*)img.imageData;
 		ret._width_step = img.widthStep;
 
 		return ret;
 	}
 
-	inline dynamic_image_info get_image_info_roi(const IplImage & img)
+	inline dynamic_image_info get_image_info_roi(const IplImage& img)
 	{
 		auto ret = get_image_info(img);
 
@@ -151,7 +151,7 @@ namespace bear
 
 		ret._width = img.roi->width;
 		ret._height = img.roi->height;
-		ret._data = (char *)(
+		ret._data = (char*)(
 			img.imageData +
 			img.roi->yOffset * img.widthStep +
 			img.roi->xOffset * (img.depth >> 3) * img.nChannels);
@@ -160,7 +160,7 @@ namespace bear
 	}
 
 
-	inline int get_image_cv_type(const dynamic_image_info & _info)
+	inline int get_image_cv_type(const dynamic_image_info& _info)
 	{
 		int type = 0;
 
@@ -208,7 +208,7 @@ namespace bear
 		return type;
 	}
 
-	inline dynamic_image_info get_image_info(const CvMat &img)
+	inline dynamic_image_info get_image_info(const CvMat& img)
 	{
 		dynamic_image_info ret;
 
@@ -252,12 +252,12 @@ namespace bear
 		}
 
 		ret._width_step = img.step;
-		ret._data = (char *)img.data.ptr;
+		ret._data = (char*)img.data.ptr;
 
 		return ret;
 	}
 
-	inline dynamic_image_info get_image_info(const cv::Mat &_img)
+	inline dynamic_image_info get_image_info(const cv::Mat& _img)
 	{
 		CvMat img(_img);
 		return get_image_info(img);
@@ -390,7 +390,7 @@ namespace bear
 
 #ifdef QT_VERSION
 
-	inline dynamic_image_info _make_d_image(const QImage &img)
+	inline dynamic_image_info _make_d_image(const QImage& img)
 	{
 		dynamic_image_info ret;
 
@@ -449,21 +449,21 @@ namespace bear
 		return ret;
 	}
 
-	inline dynamic_image_info get_image_info(QImage &img)
+	inline dynamic_image_info get_image_info(QImage& img)
 	{
 		dynamic_image_info ret = _make_d_image(img);
-		ret._data = (char *)img.bits();
+		ret._data = (char*)img.bits();
 		return ret;
 	}
 
-	inline const dynamic_image_info get_image_info(const QImage &img)
+	inline const dynamic_image_info get_image_info(const QImage& img)
 	{
 		dynamic_image_info ret = _make_d_image(img);
-		ret._data = (char *)img.bits();
+		ret._data = (char*)img.bits();
 		return ret;
 	}
 
-	inline dynamic_image_info get_image_info(const dynamic_image_info &img)
+	inline dynamic_image_info get_image_info(const dynamic_image_info& img)
 	{
 		return img;
 	}
@@ -525,48 +525,48 @@ namespace bear
 
 	public:
 
-		char * data() const
+		char* data() const
 		{
 			return _info._data;
 		}
 
 		template<typename _Elm, size_t _Ch>
-		dynamic_image_ptr(const image_ptr<_Elm, _Ch> & img)
+		dynamic_image_ptr(const image_ptr<_Elm, _Ch>& img)
 		{
 			static_assert(!std::is_const<_Elm>::value, "should not be const");
 			_info = get_image_info(img);
 		}
 
 		template<typename _Elm, size_t _Ch>
-		dynamic_image_ptr(const image<_Elm, _Ch> & img)
+		dynamic_image_ptr(const image<_Elm, _Ch>& img)
 		{
 			static_assert(!std::is_const<_Elm>::value, "should not be const");
 			_info = get_image_info(to_ptr(img), data_type_traits<typename std::decay<_Elm>::type>::value);
 		}
 
 		template<typename _Elm>
-		dynamic_image_ptr(base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>> & img)
+		dynamic_image_ptr(base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>>& img)
 		{
 			static_assert(!std::is_const<_Elm>::value, "should not be const");
 			_info = get_image_info(img);
 		}
 
 		template<typename _Elm>
-		dynamic_image_ptr(base_tensor_ptr<base_tensor_ptr<_Elm>> & img)
+		dynamic_image_ptr(base_tensor_ptr<base_tensor_ptr<_Elm>>& img)
 		{
 			static_assert(!std::is_const<_Elm>::value, "should not be const");
 			_info = get_image_info(img);
 		}
 
 		template<typename _Elm>
-		dynamic_image_ptr(const tensor<_Elm, 3> & img)
+		dynamic_image_ptr(const tensor<_Elm, 3>& img)
 		{
 			static_assert(!std::is_const<_Elm>::value, "should not be const");
 			_info = get_image_info(to_ptr(img));
 		}
 
 		template<typename _Elm>
-		dynamic_image_ptr(const tensor<_Elm, 2> & img)
+		dynamic_image_ptr(const tensor<_Elm, 2>& img)
 		{
 			static_assert(!std::is_const<_Elm>::value, "should not be const");
 			_info = get_image_info(to_ptr(img));
@@ -576,17 +576,17 @@ namespace bear
 
 #if CV_MAJOR_VERSION < 3
 
-		dynamic_image_ptr(const IplImage &img)
+		dynamic_image_ptr(const IplImage& img)
 		{
 			_info = get_image_info(img);
 		}
 
-		dynamic_image_ptr(const IplImage &img, bool roi_true)
+		dynamic_image_ptr(const IplImage& img, bool roi_true)
 		{
 			_info = get_image_info_roi(img);
 		}
 
-		dynamic_image_ptr(const CvMat &img)
+		dynamic_image_ptr(const CvMat& img)
 		{
 			_info = get_image_info(img);
 		}
@@ -615,7 +615,7 @@ namespace bear
 
 #ifdef QT_VERSION
 
-		dynamic_image_ptr(QImage &img)
+		dynamic_image_ptr(QImage& img)
 		{
 			_info = get_image_info(img);
 		}
@@ -633,7 +633,7 @@ namespace bear
 			size_t channel_size,
 			data_type elm_type,
 			size_t elm_size,
-			char * data,
+			char* data,
 			size_t width_step = 0)
 		{
 			_info._width = width;
@@ -660,7 +660,7 @@ namespace bear
 			{
 				throw bear_exception(exception_type::size_different, "wrong type!");
 			}
-			return image_ptr<_Elm, _Ch>(( typename image_ptr<_Elm, _Ch>::channel_type*)_info._data, _info._width_step, _info._width, _info._height);
+			return image_ptr<_Elm, _Ch>((typename image_ptr<_Elm, _Ch>::channel_type*)_info._data, _info._width_step, _info._width, _info._height);
 		}
 
 		template<typename _Elm>
@@ -677,7 +677,7 @@ namespace bear
 			return make_tensor_ptr(
 				make_tensor_ptr(
 					make_tensor_ptr(
-						(_Elm *)_info._data,
+						(_Elm*)_info._data,
 						_info._channel_size
 					),
 					_info._width
@@ -694,7 +694,7 @@ namespace bear
 
 	public:
 
-		const char * data() const
+		const char* data() const
 		{
 			return _info._data;
 		}
@@ -702,23 +702,23 @@ namespace bear
 #ifdef CV_MAJOR_VERSION
 
 #if CV_MAJOR_VERSION < 3
-		const_dynamic_image_ptr(const IplImage &img)
+		const_dynamic_image_ptr(const IplImage& img)
 		{
 			_info = get_image_info(img);
 		}
 
-		const_dynamic_image_ptr(IplImage * img)
+		const_dynamic_image_ptr(IplImage* img)
 		{
 			_info = get_image_info(*img);
 		}
 
-		const_dynamic_image_ptr(const CvMat &img)
+		const_dynamic_image_ptr(const CvMat& img)
 		{
 			_info = get_image_info(img);
 		}
 #endif
 
-		const_dynamic_image_ptr(const cv::Mat &img)
+		const_dynamic_image_ptr(const cv::Mat& img)
 		{
 			_info = get_image_info(img);
 		}
@@ -727,7 +727,7 @@ namespace bear
 
 #ifdef QT_VERSION
 
-		const_dynamic_image_ptr(const QImage &img)
+		const_dynamic_image_ptr(const QImage& img)
 		{
 			_info = get_image_info(img);
 		}
@@ -735,42 +735,42 @@ namespace bear
 #endif // QT_VERSION
 
 		template<typename _Elm, size_t _Ch>
-		const_dynamic_image_ptr(const image_ptr<_Elm, _Ch> & img)
+		const_dynamic_image_ptr(const image_ptr<_Elm, _Ch>& img)
 		{
 			_info = get_image_info(img);
 		}
 
 		template<typename _Elm, size_t _Ch>
-		const_dynamic_image_ptr(const image<_Elm, _Ch> & img)
+		const_dynamic_image_ptr(const image<_Elm, _Ch>& img)
 		{
 			_info = get_image_info(to_ptr(img));
 		}
 
 		template<typename _Elm>
-		const_dynamic_image_ptr(const base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>> & img)
+		const_dynamic_image_ptr(const base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>>& img)
 		{
 			_info = get_image_info(img);
 		}
 
 		template<typename _Elm>
-		const_dynamic_image_ptr(const base_tensor_ptr<base_tensor_ptr<_Elm>> & img)
+		const_dynamic_image_ptr(const base_tensor_ptr<base_tensor_ptr<_Elm>>& img)
 		{
 			_info = get_image_info(img);
 		}
 
 		template<typename _Elm>
-		const_dynamic_image_ptr(const tensor<_Elm, 3> & img)
+		const_dynamic_image_ptr(const tensor<_Elm, 3>& img)
 		{
 			_info = get_image_info(to_ptr(img));
 		}
 
 		template<typename _Elm>
-		const_dynamic_image_ptr(const tensor<_Elm, 2> & img)
+		const_dynamic_image_ptr(const tensor<_Elm, 2>& img)
 		{
 			_info = get_image_info(to_ptr(img));
 		}
 
-		const_dynamic_image_ptr(const dynamic_image_ptr &other)
+		const_dynamic_image_ptr(const dynamic_image_ptr& other)
 		{
 			_info = other._info;
 		}
@@ -783,7 +783,7 @@ namespace bear
 			size_t channel_size,
 			data_type elm_type,
 			size_t elm_size,
-			const char * data,
+			const char* data,
 			size_t width_step = 0)
 		{
 			_info._width = width;
@@ -791,7 +791,7 @@ namespace bear
 			_info._channel_size = channel_size;
 			_info._elm_type = elm_type;
 			_info._elm_size = elm_size;
-			_info._data = (char *)data;
+			_info._data = (char*)data;
 			_info._width_step = width_step;
 
 			size_t ws = _info._width * _info._channel_size * _info._elm_size;
@@ -831,7 +831,7 @@ namespace bear
 			return make_tensor_ptr(
 				make_tensor_ptr(
 					make_tensor_ptr(
-						(_Elm *)_info._data,
+						(_Elm*)_info._data,
 						_info._channel_size
 					),
 					_info._width
@@ -843,28 +843,28 @@ namespace bear
 	};
 
 
-	inline image_size size(const base_dynamic_image_ptr & img)
+	inline image_size size(const base_dynamic_image_ptr& img)
 	{
 		return image_size{ img.width(),img.height() };
 	}
 
-	inline size_t width(const base_dynamic_image_ptr & img)
+	inline size_t width(const base_dynamic_image_ptr& img)
 	{
 		return img.width();
 	}
 
-	inline size_t height(const base_dynamic_image_ptr & img)
+	inline size_t height(const base_dynamic_image_ptr& img)
 	{
 		return img.height();
 	}
 
-	inline size_t channel_size(const base_dynamic_image_ptr & img)
+	inline size_t channel_size(const base_dynamic_image_ptr& img)
 	{
 		return img.channel_size();
 	}
 
 
-	inline auto clip_image(const const_dynamic_image_ptr & img, image_rectangle r)
+	inline auto clip_image(const const_dynamic_image_ptr& img, image_rectangle r)
 	{
 		if (r.pos.x < 0 || r.pos.y < 0 || r.pos.x + r.size.width > img.width() || r.pos.y + r.size.height > img.height())
 		{
@@ -882,7 +882,7 @@ namespace bear
 			img.width_setp());
 	}
 
-	inline auto clip_image(const dynamic_image_ptr & img, image_rectangle r)
+	inline auto clip_image(const dynamic_image_ptr& img, image_rectangle r)
 	{
 		if (r.pos.x < 0 || r.pos.y < 0 || r.pos.x + r.size.width > img.width() || r.pos.y + r.size.height > img.height())
 		{
@@ -900,7 +900,7 @@ namespace bear
 			img.width_setp());
 	}
 
-	inline auto scanline(const const_dynamic_image_ptr & img, size_t y)
+	inline auto scanline(const const_dynamic_image_ptr& img, size_t y)
 	{
 		if (y > img.height())
 		{
@@ -909,7 +909,7 @@ namespace bear
 		return const_array_ptr<char>(img.data() + y * img.width_setp(), img.width());
 	}
 
-	inline auto scanline(const dynamic_image_ptr & img, size_t y)
+	inline auto scanline(const dynamic_image_ptr& img, size_t y)
 	{
 		if (y > img.height())
 		{
@@ -918,16 +918,22 @@ namespace bear
 		return array_ptr<char>(img.data() + y * img.width_setp(), img.width());
 	}
 
+	template<typename Image, typename Arg>
+	inline Image image_cast(Arg&& arg)
+	{
+		return Image(dynamic_image_ptr(std::forward<Arg>(arg)));
+	}
+
 	class dynamic_image : public dynamic_image_ptr {
 	private:
 		std::vector<char> _data;
 	public:
 		dynamic_image() = default;
-		dynamic_image(const dynamic_image & other) = default;
-		dynamic_image& operator = (const dynamic_image & other) = default;
+		dynamic_image(const dynamic_image& other) = default;
+		dynamic_image& operator = (const dynamic_image& other) = default;
 
 
-		dynamic_image(dynamic_image && other):
+		dynamic_image(dynamic_image&& other) :
 			_data(std::move(other._data))
 		{
 			_info = other._info;
@@ -935,7 +941,7 @@ namespace bear
 			other._info._height = 0;
 			other._info._data = NULL;
 		}
-		dynamic_image& operator = (dynamic_image && other)
+		dynamic_image& operator = (dynamic_image&& other)
 		{
 			_data = std::move(other._data);
 			_info = other._info;
@@ -953,9 +959,9 @@ namespace bear
 			size_t height,
 			size_t channel_size,
 			data_type elm_type,
-			size_t elm_size):
-			dynamic_image_ptr(width,height,channel_size,elm_type,elm_size,0,width * channel_size * elm_size),
-			_data(width * height * channel_size * elm_size)
+			size_t elm_size) :
+			dynamic_image_ptr(width, height, channel_size, elm_type, elm_size, 0, width* channel_size* elm_size),
+			_data(width* height* channel_size* elm_size)
 		{
 			_info._data = &_data[0];
 		}
