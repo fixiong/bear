@@ -295,64 +295,74 @@ namespace bear
 			return basic_string_ptr::_add(ls, rs);
 		}
 
-		friend bool operator == (const basic_string_ptr& ls, _Elm* rs)
+		friend container_type operator + (const _Elm* ls, const basic_string_ptr& rs)
+		{
+			return basic_string_ptr::_add(const_self(ls), rs);
+		}
+
+		friend container_type operator + (const basic_string_ptr& ls, const _Elm* rs)
+		{
+			return basic_string_ptr::_add(ls, const_self(rs));
+		}
+
+		friend bool operator == (const basic_string_ptr& ls, const _Elm* rs)
 		{
 			return !_cmp(ls.data(), ls.size(), rs);
 		}
 
-		friend bool operator != (const basic_string_ptr& ls, _Elm* rs)
+		friend bool operator != (const basic_string_ptr& ls, const _Elm* rs)
 		{
 			return _cmp(ls.data(), ls.size(), rs);
 		}
 
-		friend bool operator > (const basic_string_ptr& ls, _Elm* rs)
+		friend bool operator > (const basic_string_ptr& ls, const _Elm* rs)
 		{
 			return _cmp(ls.data(), ls.size(), rs) > 0;
 		}
 
-		friend bool operator < (const basic_string_ptr& ls, _Elm* rs)
+		friend bool operator < (const basic_string_ptr& ls, const _Elm* rs)
 		{
 			return _cmp(ls.data(), ls.size(), rs) < 0;
 		}
 
-		friend bool operator >= (const basic_string_ptr& ls, _Elm* rs)
+		friend bool operator >= (const basic_string_ptr& ls, const _Elm* rs)
 		{
 			return _cmp(ls.data(), ls.size(), rs) >= 0;
 		}
 
-		friend bool operator <= (const basic_string_ptr& ls, _Elm* rs)
+		friend bool operator <= (const basic_string_ptr& ls, const _Elm* rs)
 		{
 			return _cmp(ls.data(), ls.size(), rs) <= 0;
 		}
 
 
 
-		friend bool operator == (_Elm* rs, const basic_string_ptr& ls)
+		friend bool operator == (const _Elm* rs, const basic_string_ptr& ls)
 		{
 			return !_cmp(ls.data(), ls.size(), rs);
 		}
 
-		friend bool operator != (_Elm* rs, const basic_string_ptr& ls)
+		friend bool operator != (const _Elm* rs, const basic_string_ptr& ls)
 		{
 			return _cmp(ls.data(), ls.size(), rs);
 		}
 
-		friend bool operator > (_Elm* rs, const basic_string_ptr& ls)
+		friend bool operator > (const _Elm* rs, const basic_string_ptr& ls)
 		{
 			return _cmp(ls.data(), ls.size(), rs) < 0;
 		}
 
-		friend bool operator < (_Elm* rs, const basic_string_ptr& ls)
+		friend bool operator < (const _Elm* rs, const basic_string_ptr& ls)
 		{
 			return _cmp(ls.data(), ls.size(), rs) > 0;
 		}
 
-		friend bool operator >= (_Elm* rs, const basic_string_ptr& ls)
+		friend bool operator >= (const _Elm* rs, const basic_string_ptr& ls)
 		{
 			return _cmp(ls.data(), ls.size(), rs) <= 0;
 		}
 
-		friend bool operator <= (_Elm* rs, const basic_string_ptr& ls)
+		friend bool operator <= (const _Elm* rs, const basic_string_ptr& ls)
 		{
 			return _cmp(ls.data(), ls.size(), rs) >= 0;
 		}
