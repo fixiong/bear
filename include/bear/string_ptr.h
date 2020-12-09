@@ -18,8 +18,8 @@ namespace bear
 		using normal_base = array_ptr<typename std::remove_const<_Elm>::type>;
 		using const_base = array_ptr<const _Elm>;
 
-		using normal_self = basic_string_ptr<typename std::remove_const<_Elm>::type,_Trt>;
-		using const_self = basic_string_ptr<const _Elm,_Trt>;
+		using normal_self = basic_string_ptr<typename std::remove_const<_Elm>::type, _Trt>;
+		using const_self = basic_string_ptr<const _Elm, _Trt>;
 		using other_self = typename std::conditional<
 			std::is_const<_Elm>::value,
 			normal_self,
@@ -28,9 +28,9 @@ namespace bear
 	private:
 
 		static int _cmp(
-			const _Elm *p,
+			const _Elm* p,
 			size_t p_size,
-			const _Elm *q,
+			const _Elm* q,
 			size_t q_size)
 		{
 			size_t ms;
@@ -60,9 +60,9 @@ namespace bear
 
 
 		static int _cmp(
-			const _Elm *p,
+			const _Elm* p,
 			size_t p_size,
-			const _Elm *q)
+			const _Elm* q)
 		{
 			size_t i = p_size;
 			for (;;)
@@ -79,7 +79,7 @@ namespace bear
 				}
 
 				if (*p < *q)return -1;
-				if (*p > *q)return 1;
+				if (*p > * q)return 1;
 
 
 				++p;
@@ -92,12 +92,12 @@ namespace bear
 	public:
 
 		basic_string_ptr() = default;
-		basic_string_ptr(const basic_string_ptr &oth) = default;
+		basic_string_ptr(const basic_string_ptr& oth) = default;
 
 
 
 		template<typename _Oe_>
-		basic_string_ptr(const array_ptr<_Oe_> &oth) :base(oth)
+		basic_string_ptr(const array_ptr<_Oe_>& oth) :base(oth)
 		{
 			static_assert(
 				is_memory_compatible<typename base::elm_type, _Oe_>::value,
@@ -107,27 +107,27 @@ namespace bear
 		template<typename _Iter>
 		basic_string_ptr(_Iter _begin, _Iter _end) : base(_begin, _end) {}
 
-		basic_string_ptr(_Elm * _begin, size_t _size) :base(_begin, _size) {}
+		basic_string_ptr(_Elm* _begin, size_t _size) :base(_begin, _size) {}
 
-		basic_string_ptr(_Elm * _cs) : base(_cs, _Trt::length(_cs)){}
-
-		template<typename _Oe, typename _Alc>
-		basic_string_ptr(const std::vector<_Oe, _Alc> & _ctn) :base(_ctn) {}
-
-		template<typename _Oe, size_t Size>
-		basic_string_ptr(const std::array<_Oe, Size> & _ctn) : base(_ctn) {}
-
-		template<typename _Oe, typename _Trt_>
-		basic_string_ptr(const std::basic_string<_Oe, _Trt_> & _ctn) : base(_ctn) {}
+		basic_string_ptr(_Elm* _cs) : base(_cs, _Trt::length(_cs)) {}
 
 		template<typename _Oe, typename _Alc>
-		basic_string_ptr(std::vector<_Oe, _Alc> & _ctn) : base(_ctn) {}
+		basic_string_ptr(const std::vector<_Oe, _Alc>& _ctn) : base(_ctn) {}
 
 		template<typename _Oe, size_t Size>
-		basic_string_ptr(std::array<_Oe, Size> & _ctn) : base(_ctn) {}
+		basic_string_ptr(const std::array<_Oe, Size>& _ctn) : base(_ctn) {}
 
 		template<typename _Oe, typename _Trt_>
-		basic_string_ptr(std::basic_string<_Oe, _Trt_> & _ctn) : base(_ctn) {}
+		basic_string_ptr(const std::basic_string<_Oe, _Trt_>& _ctn) : base(_ctn) {}
+
+		template<typename _Oe, typename _Alc>
+		basic_string_ptr(std::vector<_Oe, _Alc>& _ctn) : base(_ctn) {}
+
+		template<typename _Oe, size_t Size>
+		basic_string_ptr(std::array<_Oe, Size>& _ctn) : base(_ctn) {}
+
+		template<typename _Oe, typename _Trt_>
+		basic_string_ptr(std::basic_string<_Oe, _Trt_>& _ctn) : base(_ctn) {}
 
 		inline auto _split(_Elm c) const
 		{
@@ -141,7 +141,7 @@ namespace bear
 				basic_string_ptr(pos, base::end() - pos));
 		}
 
-		std::basic_string<typename std::decay<_Elm>::type, _Trt> to_string() const{
+		std::basic_string<typename std::decay<_Elm>::type, _Trt> to_string() const {
 			return std::basic_string<typename std::decay<_Elm>::type, _Trt>(this->begin(), this->end());
 		}
 
@@ -150,64 +150,64 @@ namespace bear
 			return std::basic_string<typename std::decay<_Elm>::type, _Trt>(this->begin(), this->end());
 		}
 
-		friend bool operator == (const basic_string_ptr &ls, const basic_string_ptr &rs)
+		friend bool operator == (const basic_string_ptr& ls, const basic_string_ptr& rs)
 		{
-			return !_cmp(&ls[0], ls.size(), &rs[0], rs.size());
+			return !_cmp(ls.data(), ls.size(), rs.data(), rs.size());
 		}
 
-		friend bool operator != (const basic_string_ptr &ls, const basic_string_ptr &rs)
+		friend bool operator != (const basic_string_ptr& ls, const basic_string_ptr& rs)
 		{
-			return _cmp(&ls[0], ls.size(), &rs[0], rs.size());
+			return _cmp(ls.data(), ls.size(), rs.data(), rs.size());
 		}
 
-		friend bool operator > (const basic_string_ptr &ls, const basic_string_ptr &rs)
+		friend bool operator > (const basic_string_ptr& ls, const basic_string_ptr& rs)
 		{
-			return _cmp(&ls[0], ls.size(), &rs[0], rs.size()) > 0;
+			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) > 0;
 		}
 
-		friend bool operator < (const basic_string_ptr &ls, const basic_string_ptr &rs)
+		friend bool operator < (const basic_string_ptr& ls, const basic_string_ptr& rs)
 		{
-			return _cmp(&ls[0], ls.size(), &rs[0], rs.size()) < 0;
+			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) < 0;
 		}
 
-		friend bool operator >= (const basic_string_ptr &ls, const basic_string_ptr &rs)
+		friend bool operator >= (const basic_string_ptr& ls, const basic_string_ptr& rs)
 		{
-			return _cmp(&ls[0], ls.size(), &rs[0], rs.size()) >= 0;
+			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) >= 0;
 		}
 
-		friend bool operator <= (const basic_string_ptr &ls, const basic_string_ptr &rs)
+		friend bool operator <= (const basic_string_ptr& ls, const basic_string_ptr& rs)
 		{
-			return _cmp(&ls[0], ls.size(), &rs[0], rs.size()) <= 0;
+			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) <= 0;
 		}
 
 
 
-		bool operator == (const other_self &rs) const
+		bool operator == (const other_self& rs) const
 		{
 			return !_cmp(this->data(), this->size(), rs.data(), rs.size());
 		}
 
-		bool operator != (const other_self &rs) const
+		bool operator != (const other_self& rs) const
 		{
 			return _cmp(this->data(), this->size(), rs.data(), rs.size());
 		}
 
-		bool operator > (const other_self &rs) const
+		bool operator > (const other_self& rs) const
 		{
 			return _cmp(this->data(), this->size(), rs.data(), rs.size()) > 0;
 		}
 
-		bool operator < (const other_self &rs) const
+		bool operator < (const other_self& rs) const
 		{
 			return _cmp(this->data(), this->size(), rs.data(), rs.size()) < 0;
 		}
 
-		bool operator >= (const other_self &rs) const
+		bool operator >= (const other_self& rs) const
 		{
 			return _cmp(this->data(), this->size(), rs.data(), rs.size()) >= 0;
 		}
 
-		bool operator <= (const other_self &rs) const
+		bool operator <= (const other_self& rs) const
 		{
 			return _cmp(this->data(), this->size(), rs.data(), rs.size()) <= 0;
 		}
@@ -216,66 +216,65 @@ namespace bear
 
 
 
-		friend bool operator == (const basic_string_ptr &ls, const std::string &rs)
+		friend bool operator == (const basic_string_ptr& ls, const std::string& rs)
 		{
-			return !_cmp(&ls[0], ls.size(), &rs[0], rs.size());
+			return !_cmp(ls.data(), ls.size(), rs.data(), rs.size());
 		}
 
-		friend bool operator != (const basic_string_ptr &ls, const std::string &rs)
+		friend bool operator != (const basic_string_ptr& ls, const std::string& rs)
 		{
-			return _cmp(&ls[0], ls.size(), &rs[0], rs.size());
+			return _cmp(ls.data(), ls.size(), rs.data(), rs.size());
 		}
 
-		friend bool operator > (const basic_string_ptr &ls, const std::string &rs)
+		friend bool operator > (const basic_string_ptr& ls, const std::string& rs)
 		{
-			return _cmp(&ls[0], ls.size(), &rs[0], rs.size()) > 0;
+			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) > 0;
 		}
 
-		friend bool operator < (const basic_string_ptr &ls, const std::string &rs)
+		friend bool operator < (const basic_string_ptr& ls, const std::string& rs)
 		{
-			return _cmp(&ls[0], ls.size(), &rs[0], rs.size()) < 0;
+			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) < 0;
 		}
 
-		friend bool operator >= (const basic_string_ptr &ls, const std::string &rs)
+		friend bool operator >= (const basic_string_ptr& ls, const std::string& rs)
 		{
-			return _cmp(&ls[0], ls.size(), &rs[0], rs.size()) >= 0;
+			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) >= 0;
 		}
 
-		friend bool operator <= (const basic_string_ptr &ls, const std::string &rs)
+		friend bool operator <= (const basic_string_ptr& ls, const std::string& rs)
 		{
-			return _cmp(&ls[0], ls.size(), &rs[0], rs.size()) <= 0;
+			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) <= 0;
 		}
-
 
 
 		friend bool operator == (const  container_type& ls, const basic_string_ptr &rs)
 		{
-			return !_cmp(&ls[0], ls.size(), &rs[0], rs.size());
+			return !_cmp(ls.data(), ls.size(), rs.data(), rs.size());
 		}
 
 		friend bool operator != (const  container_type& ls, const basic_string_ptr &rs)
 		{
-			return _cmp(&ls[0], ls.size(), &rs[0], rs.size());
+			return _cmp(ls.data(), ls.size(), rs.data(), rs.size());
 		}
 
 		friend bool operator > (const  container_type& ls, const basic_string_ptr &rs)
 		{
-			return _cmp(&ls[0], ls.size(), &rs[0], rs.size()) > 0;
+			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) > 0;
 		}
 
 		friend bool operator < (const  container_type& ls, const basic_string_ptr &rs)
 		{
-			return _cmp(&ls[0], ls.size(), &rs[0], rs.size()) < 0;
+			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) < 0;
 		}
 
 		friend bool operator >= (const  container_type& ls, const basic_string_ptr &rs)
 		{
-			return _cmp(&ls[0], ls.size(), &rs[0], rs.size()) >= 0;
+			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) >= 0;
 		}
 
 		friend bool operator <= (const  container_type& ls, const basic_string_ptr &rs)
 		{
-			return _cmp(&ls[0], ls.size(), &rs[0], rs.size()) <= 0;
+			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) <= 0;
 		}
 
 		static container_type _add(const_base ls, const_base rs)
@@ -296,66 +295,66 @@ namespace bear
 			return basic_string_ptr::_add(ls, rs);
 		}
 
-		friend bool operator == (const basic_string_ptr &ls, _Elm * rs)
+		friend bool operator == (const basic_string_ptr& ls, _Elm* rs)
 		{
-			return !_cmp(&ls[0], ls.size(), rs);
+			return !_cmp(ls.data(), ls.size(), rs);
 		}
 
-		friend bool operator != (const basic_string_ptr &ls, _Elm * rs)
+		friend bool operator != (const basic_string_ptr& ls, _Elm* rs)
 		{
-			return _cmp(&ls[0], ls.size(), rs);
+			return _cmp(ls.data(), ls.size(), rs);
 		}
 
-		friend bool operator > (const basic_string_ptr &ls, _Elm * rs)
+		friend bool operator > (const basic_string_ptr& ls, _Elm* rs)
 		{
-			return _cmp(&ls[0], ls.size(), rs) > 0;
+			return _cmp(ls.data(), ls.size(), rs) > 0;
 		}
 
-		friend bool operator < (const basic_string_ptr &ls, _Elm * rs)
+		friend bool operator < (const basic_string_ptr& ls, _Elm* rs)
 		{
-			return _cmp(&ls[0], ls.size(), rs) < 0;
+			return _cmp(ls.data(), ls.size(), rs) < 0;
 		}
 
-		friend bool operator >= (const basic_string_ptr &ls, _Elm * rs)
+		friend bool operator >= (const basic_string_ptr& ls, _Elm* rs)
 		{
-			return _cmp(&ls[0], ls.size(), rs) >= 0;
+			return _cmp(ls.data(), ls.size(), rs) >= 0;
 		}
 
-		friend bool operator <= (const basic_string_ptr &ls, _Elm * rs)
+		friend bool operator <= (const basic_string_ptr& ls, _Elm* rs)
 		{
-			return _cmp(&ls[0], ls.size(), rs) <= 0;
+			return _cmp(ls.data(), ls.size(), rs) <= 0;
 		}
 
 
 
-		friend bool operator == (_Elm * rs, const basic_string_ptr &ls)
+		friend bool operator == (_Elm* rs, const basic_string_ptr& ls)
 		{
-			return !_cmp(&ls[0], ls.size(), rs);
+			return !_cmp(ls.data(), ls.size(), rs);
 		}
 
-		friend bool operator != (_Elm * rs, const basic_string_ptr &ls)
+		friend bool operator != (_Elm* rs, const basic_string_ptr& ls)
 		{
-			return _cmp(&ls[0], ls.size(), rs);
+			return _cmp(ls.data(), ls.size(), rs);
 		}
 
-		friend bool operator > (_Elm * rs, const basic_string_ptr &ls)
+		friend bool operator > (_Elm* rs, const basic_string_ptr& ls)
 		{
-			return _cmp(&ls[0], ls.size(), rs) < 0;
+			return _cmp(ls.data(), ls.size(), rs) < 0;
 		}
 
-		friend bool operator < (_Elm * rs, const basic_string_ptr &ls)
+		friend bool operator < (_Elm* rs, const basic_string_ptr& ls)
 		{
-			return _cmp(&ls[0], ls.size(), rs) > 0;
+			return _cmp(ls.data(), ls.size(), rs) > 0;
 		}
 
-		friend bool operator >= (_Elm * rs, const basic_string_ptr &ls)
+		friend bool operator >= (_Elm* rs, const basic_string_ptr& ls)
 		{
-			return _cmp(&ls[0], ls.size(), rs) <= 0;
+			return _cmp(ls.data(), ls.size(), rs) <= 0;
 		}
 
-		friend bool operator <= (_Elm * rs, const basic_string_ptr &ls)
+		friend bool operator <= (_Elm* rs, const basic_string_ptr& ls)
 		{
-			return _cmp(&ls[0], ls.size(), rs) >= 0;
+			return _cmp(ls.data(), ls.size(), rs) >= 0;
 		}
 
 		inline auto clip(size_t start, size_t end)
@@ -365,7 +364,7 @@ namespace bear
 			return basic_string_ptr(this->data() + start, end - start);
 		}
 
-		friend size_t size(const basic_string_ptr & str)
+		friend size_t size(const basic_string_ptr& str)
 		{
 			return str.size();
 		}
@@ -373,40 +372,40 @@ namespace bear
 
 	template<typename _Elm, typename _Trt>
 	inline std::basic_string<typename std::decay<_Elm>::type, _Trt>
-		make_container(const basic_string_ptr<_Elm, _Trt> &str)
+		make_container(const basic_string_ptr<_Elm, _Trt>& str)
 	{
 		return std::basic_string<typename std::decay<_Elm>::type, _Trt>(str.begin(), str.end());
 	}
 
 
 	template<typename _Elm>
-	inline basic_string_ptr<_Elm> to_ptr(_Elm * oth)
+	inline basic_string_ptr<_Elm> to_ptr(_Elm* oth)
 	{
 		return basic_string_ptr<_Elm>(oth);
 	}
 
 
 	template<typename _Elm, typename _Trt>
-	inline basic_string_ptr<_Elm, _Trt> to_ptr(std::basic_string<_Elm, _Trt> &oth)
+	inline basic_string_ptr<_Elm, _Trt> to_ptr(std::basic_string<_Elm, _Trt>& oth)
 	{
 		return basic_string_ptr<_Elm, _Trt>(oth);
 	}
 
 	template<typename _Elm, typename _Trt>
-	inline const_basic_string_ptr<_Elm, _Trt> to_ptr(const std::basic_string<_Elm, _Trt> &oth)
+	inline const_basic_string_ptr<_Elm, _Trt> to_ptr(const std::basic_string<_Elm, _Trt>& oth)
 	{
 		return const_basic_string_ptr<_Elm, _Trt>(oth);
 	}
 
 
 	template<typename _Elm, typename _Trt>
-	inline auto _clip(const basic_string_ptr<_Elm, _Trt> & oth, size_t start, size_t end)
+	inline auto _clip(const basic_string_ptr<_Elm, _Trt>& oth, size_t start, size_t end)
 	{
 		return oth.clip(start, end);
 	}
 
 	template<typename _Elm, typename _Trt>
-	inline auto split(const basic_string_ptr<_Elm, _Trt> & oth, typename basic_string_ptr<_Elm, _Trt>::elm_type c)
+	inline auto split(const basic_string_ptr<_Elm, _Trt>& oth, typename basic_string_ptr<_Elm, _Trt>::elm_type c)
 	{
 		std::vector<basic_string_ptr<_Elm, _Trt>> ret;
 
@@ -414,7 +413,7 @@ namespace bear
 
 		auto pr = oth._split(c);
 
-		for (; !pr.second.empty(); pr = pr.second.clip(1,pr.second.size())._split(c))
+		for (; !pr.second.empty(); pr = pr.second.clip(1, pr.second.size())._split(c))
 		{
 			ret.push_back(pr.first);
 		}
@@ -427,7 +426,7 @@ namespace bear
 
 
 	template<typename _Stm, typename _Elm, typename _Trt>
-	inline _Stm && operator >> (_Stm && stm, basic_string_ptr<_Elm, _Trt> arr)
+	inline _Stm&& operator >> (_Stm&& stm, basic_string_ptr<_Elm, _Trt> arr)
 	{
 		auto e = arr.end();
 		for (auto b = arr.begin(); b < e; ++b)
@@ -439,7 +438,7 @@ namespace bear
 
 
 	template<typename _Stm, typename _Elm, typename _Trt>
-	inline _Stm && operator << (_Stm && stm, basic_string_ptr<_Elm, _Trt> arr)
+	inline _Stm&& operator << (_Stm&& stm, basic_string_ptr<_Elm, _Trt> arr)
 	{
 		auto e = arr.end();
 		for (auto b = arr.begin(); b < e; ++b)
@@ -466,14 +465,14 @@ namespace bear
 
 
 	template<typename _Elm, typename _Trt, typename _Alc>
-	inline std::basic_string<_Elm,_Trt,_Alc> operator + (std::basic_string<_Elm, _Trt, _Alc> &&s, basic_string_ptr<_Elm, _Trt> arr)
+	inline std::basic_string<_Elm, _Trt, _Alc> operator + (std::basic_string<_Elm, _Trt, _Alc>&& s, basic_string_ptr<_Elm, _Trt> arr)
 	{
 		s.append(arr.data(), arr.size());
 		return std::move(s);
 	}
 
 	template<typename _Elm, typename _Trt, typename _Alc>
-	inline std::basic_string<_Elm, _Trt, _Alc> operator + (const std::basic_string<_Elm, _Trt, _Alc> &_s, basic_string_ptr<_Elm, _Trt> arr)
+	inline std::basic_string<_Elm, _Trt, _Alc> operator + (const std::basic_string<_Elm, _Trt, _Alc>& _s, basic_string_ptr<_Elm, _Trt> arr)
 	{
 		auto s = _s;
 		s.append(arr.data(), arr.size());
