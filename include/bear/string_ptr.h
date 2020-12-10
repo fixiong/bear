@@ -7,16 +7,28 @@
 
 namespace bear
 {
+
+	template<typename _CT, typename _Elm>
+	static _CT _basic_string_ptr_add(array_ptr<const _Elm> ls, array_ptr<const _Elm> rs)
+	{
+		_CT ret(ls.size() + rs.size(), 0);
+		copy(array_ptr<_Elm>(ret).clip(0, ls.size()), ls);
+		copy(array_ptr<_Elm>(ret).clip(ls.size(), ret.size()), rs);
+		return ret;
+	}
+
 	template<typename _Elm, typename _Trt>
 	class basic_string_ptr : public array_ptr<_Elm>
 	{
 	public:
 
 		using traits_type = _Trt;
-		using container_type = std::basic_string<typename std::remove_const<_Elm>::type, _Trt>;
+		using normal_elm = typename std::remove_const<_Elm>::type;
+		using container_type = std::basic_string<normal_elm, _Trt>;
 		using base = array_ptr<_Elm>;
-		using normal_base = array_ptr<typename std::remove_const<_Elm>::type>;
+		using normal_base = array_ptr<normal_elm>;
 		using const_base = array_ptr<const _Elm>;
+
 
 		using normal_self = basic_string_ptr<typename std::remove_const<_Elm>::type, _Trt>;
 		using const_self = basic_string_ptr<const _Elm, _Trt>;
@@ -277,32 +289,24 @@ namespace bear
 			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) <= 0;
 		}
 
-		static container_type _add(const_base ls, const_base rs)
-		{
-			container_type ret(ls.size() + rs.size(), 0);
-			copy(normal_base(ret).clip(0, ls.size()), ls);
-			copy(normal_base(ret).clip(ls.size(), ret.size()), rs);
-			return ret;
-		}
-
 		friend container_type operator + (const  container_type& ls, const basic_string_ptr& rs)
 		{
-			return basic_string_ptr::_add(ls, rs);
+			return _basic_string_ptr_add<container_type, normal_elm>(ls, rs);
 		}
 
 		friend container_type operator + (const basic_string_ptr& ls, const container_type& rs)
 		{
-			return basic_string_ptr::_add(ls, rs);
+			return _basic_string_ptr_add<container_type, normal_elm>(ls, rs);
 		}
 
 		friend container_type operator + (const _Elm* ls, const basic_string_ptr& rs)
 		{
-			return basic_string_ptr::_add(const_self(ls), rs);
+			return _basic_string_ptr_add<container_type, normal_elm>(const_self(ls), rs);
 		}
 
 		friend container_type operator + (const basic_string_ptr& ls, const _Elm* rs)
 		{
-			return basic_string_ptr::_add(ls, const_self(rs));
+			return _basic_string_ptr_add<container_type, normal_elm>(ls, const_self(rs));
 		}
 
 		friend bool operator == (const basic_string_ptr& ls, const _Elm* rs)
