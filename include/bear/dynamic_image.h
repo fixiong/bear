@@ -123,6 +123,41 @@ namespace bear
 		return ret;
 	}
 
+
+	template<typename _Elm, size_t _CH>
+	inline dynamic_image_info get_image_info(const const_image_ptr<_Elm, _CH>& ptr)
+	{
+		dynamic_image_info ret;
+
+		ret._width = width(ptr);
+		ret._height = height(ptr);
+		ret._channel_size = channel_size(ptr);
+
+		ret._elm_type = data_type_traits<_Elm>::value;
+		ret._elm_size = sizeof(_Elm);
+		ret._data = (char*)ptr.data();
+		ret._width_step = ptr.move_step();
+
+		return ret;
+	}
+
+	template<typename _Elm, size_t _CH>
+	inline dynamic_image_info get_image_info(const image_ptr<_Elm, _CH>& ptr)
+	{
+		dynamic_image_info ret;
+
+		ret._width = width(ptr);
+		ret._height = height(ptr);
+		ret._channel_size = channel_size(ptr);
+
+		ret._elm_type = data_type_traits<_Elm>::value;
+		ret._elm_size = sizeof(_Elm);
+		ret._data = (char*)ptr.data();
+		ret._width_step = ptr.move_step();
+
+		return ret;
+	}
+
 #ifdef CV_MAJOR_VERSION
 
 #if CV_MAJOR_VERSION < 3
@@ -530,6 +565,11 @@ namespace bear
 			return _info._data;
 		}
 
+		array_ptr<char> data_array()
+		{
+			return array_ptr<char>(_info._data, _info._width_step * _info._height);
+		}
+
 		template<typename _Elm, size_t _Ch>
 		dynamic_image_ptr(const image_ptr<_Elm, _Ch>& img)
 		{
@@ -697,6 +737,11 @@ namespace bear
 		const char* data() const
 		{
 			return _info._data;
+		}
+
+		const_array_ptr<char> data_array()
+		{
+			return const_array_ptr<char>(_info._data, _info._width_step * _info._height);
 		}
 
 #ifdef CV_MAJOR_VERSION
@@ -933,7 +978,7 @@ namespace bear
 		dynamic_image& operator = (const dynamic_image& other) = default;
 
 
-		dynamic_image(dynamic_image&& other) :
+		dynamic_image(dynamic_image&& other) noexcept:
 			_data(std::move(other._data))
 		{
 			_info = other._info;
@@ -941,7 +986,7 @@ namespace bear
 			other._info._height = 0;
 			other._info._data = NULL;
 		}
-		dynamic_image& operator = (dynamic_image&& other)
+		dynamic_image& operator = (dynamic_image&& other) noexcept
 		{
 			_data = std::move(other._data);
 			_info = other._info;
@@ -952,7 +997,52 @@ namespace bear
 			return *this;
 		}
 
+		dynamic_image(const_dynamic_image_ptr other) noexcept :
+			_data(other.elm_size() * other.channel_size() * other.width() * other.height())
+		{
+			_info._width = other.width();
+			_info._height = other.height();;
+			_info._channel_size = other.channel_size();
+			_info._elm_type = other.elm_type();
+			_info._elm_size = other.elm_size();
+			_info._data = &_data[0];
+			_info._width_step = other.elm_size() * other.channel_size() * other.width();
+			
+			for (size_t i = 0; i < _info._height; ++i)
+			{
+				memcpy(
+					_info._data + _info._width_step * i,
+					other.data() + other.width_setp() * i,
+					_info._width_step);
+			}
+		}
+		dynamic_image& operator = (const_dynamic_image_ptr other) noexcept
+		{
+			_data.resize(other.elm_size() * other.channel_size() * other.width() * other.height());
 
+			_info._width = other.width();
+			_info._height = other.height();;
+			_info._channel_size = other.channel_size();
+			_info._elm_type = other.elm_type();
+			_info._elm_size = other.elm_size();
+			_info._data = &_data[0];
+			_info._width_step = other.elm_size() * other.channel_size() * other.width();
+
+			for (size_t i = 0; i < _info._height; ++i)
+			{
+				memcpy(
+					_info._data + _info._width_step * i,
+					other.data() + other.width_setp() * i,
+					_info._width_step);
+			}
+
+			return *this;
+		}
+
+		array_ptr<char> data_array()
+		{
+			return _data;
+		}
 
 		dynamic_image(
 			size_t width,
