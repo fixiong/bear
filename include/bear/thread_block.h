@@ -23,6 +23,11 @@ namespace bear
 
 	public:
 
+		bool initialized()
+		{
+			return inited;
+		}
+
 		bool working = false;
 
 		template<typename ..._T>
@@ -124,9 +129,13 @@ namespace bear
 	class thread_block
 	{
 		shared_smp_ptr<thread_block_data, true> m_data;
-		thread_block(int, int)
+
+		void _check()
 		{
-			m_data = m_data.create();
+			if (!m_data->initialized())
+			{
+				m_data->init(thread_block_data::vork_routine, m_data);
+			}
 		}
 	public:
 
@@ -134,7 +143,7 @@ namespace bear
 		static std::pair<thread_block, _Res* > create()
 		{
 			_Res* ptr;
-			thread_block block(0,0);
+			thread_block block;
 			block.m_data->init(
 				thread_block_data::vork_routine_res_create<_Res>,
 				block.m_data,
@@ -148,11 +157,11 @@ namespace bear
 		{
 			using res_t = typename std::decay<decltype(mak())>::type;
 			res_t* ptr;
-			thread_block block(0, 0);
+			thread_block block;
 			block.m_data->init(
 				thread_block_data::vork_routine_res_maker<_Maker&&, res_t>,
 				block.m_data,
-				std::forward<_Maker>(mak)
+				std::forward<_Maker>(mak),
 				&ptr);
 
 			return std::make_pair(std::move(block), ptr);
@@ -161,22 +170,24 @@ namespace bear
 		thread_block()
 		{
 			m_data = m_data.create();
-			m_data->init(thread_block_data::vork_routine, m_data);
 		}
 
 		bool running()
 		{
+			_check();
 			return m_data->working;
 		}
 
 		void wait()
 		{
+			_check();
 			m_data->_wait();
 		}
 
 		template<typename _T>
 		void run(_T&& work)
 		{
+			_check();
 			m_data->_wait();
 			m_data->_run(std::forward<_T>(work));
 		}

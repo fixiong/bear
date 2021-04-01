@@ -514,6 +514,11 @@ namespace bear
 	{
 		using return_type = base_tensor_ptr<array_ptr<typename base_tensor_ptr<_Elm>::elm_type>>;
 
+		if (1 == oth.size() && 1 == oth.front().size())
+		{
+			return _reshape(oth.front(), sizes);
+		}
+
 		if (oth.size() == sizes[0])return return_type(
 			oth.front().plan(),
 			oth.size(),
@@ -536,6 +541,11 @@ namespace bear
 	inline auto _reshape(const base_tensor_ptr<_Elm> &oth, const tensor_size<_Dim> &sizes)
 	{
 		using return_type = tensor_ptr<typename base_tensor_ptr<_Elm>::elm_type, _Dim>;
+
+		if (1 == oth.size() && 1 == oth.front().size())
+		{
+			return _reshape(oth.front(), sizes);
+		}
 
 		if (oth.size() == sizes[0])return return_type(
 			_reshape(oth.front(), sub_size(sizes)),
