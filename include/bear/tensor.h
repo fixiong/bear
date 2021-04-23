@@ -119,6 +119,11 @@ namespace bear
 			_ptr.copy(oth);
 		}
 
+		bool empty()
+		{
+			return size() == 0;
+		}
+
 		void resize(const deep_size_type &_size)
 		{
 			if (bear::size(_ptr) == _size)return;
@@ -127,6 +132,13 @@ namespace bear
 			_ptr = ptr_type(&_data[0], _size);
 		}
 
+		template<typename ... _T>
+		void resize(size_t _s1, _T ... _sizes)
+		{
+			auto size = make_tensor_size(_s1, _sizes ...);
+
+			resize(size);
+		}
 
 		operator ptr_type ()
 		{
