@@ -80,6 +80,8 @@ namespace bear
 
 	struct image_rectangle
 	{
+		image_rectangle() :
+			pos(0, 0), size(0, 0) {}
 		image_rectangle(pos_t _x, pos_t _y, size_t _width, size_t _height) :
 			pos(_x, _y), size(_width, _height) {}
 		image_rectangle(image_point _pos, image_size _size) :
