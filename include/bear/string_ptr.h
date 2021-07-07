@@ -91,7 +91,7 @@ namespace bear
 				}
 
 				if (*p < *q)return -1;
-				if (*p > * q)return 1;
+				if (*p > *q)return 1;
 
 
 				++p;
@@ -259,32 +259,32 @@ namespace bear
 		}
 
 
-		friend bool operator == (const  container_type& ls, const basic_string_ptr &rs)
+		friend bool operator == (const  container_type& ls, const basic_string_ptr& rs)
 		{
 			return !_cmp(ls.data(), ls.size(), rs.data(), rs.size());
 		}
 
-		friend bool operator != (const  container_type& ls, const basic_string_ptr &rs)
+		friend bool operator != (const  container_type& ls, const basic_string_ptr& rs)
 		{
 			return _cmp(ls.data(), ls.size(), rs.data(), rs.size());
 		}
 
-		friend bool operator > (const  container_type& ls, const basic_string_ptr &rs)
+		friend bool operator > (const  container_type& ls, const basic_string_ptr& rs)
 		{
 			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) > 0;
 		}
 
-		friend bool operator < (const  container_type& ls, const basic_string_ptr &rs)
+		friend bool operator < (const  container_type& ls, const basic_string_ptr& rs)
 		{
 			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) < 0;
 		}
 
-		friend bool operator >= (const  container_type& ls, const basic_string_ptr &rs)
+		friend bool operator >= (const  container_type& ls, const basic_string_ptr& rs)
 		{
 			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) >= 0;
 		}
 
-		friend bool operator <= (const  container_type& ls, const basic_string_ptr &rs)
+		friend bool operator <= (const  container_type& ls, const basic_string_ptr& rs)
 		{
 			return _cmp(ls.data(), ls.size(), rs.data(), rs.size()) <= 0;
 		}
@@ -450,6 +450,16 @@ namespace bear
 		return std::forward<_Stm>(stm);
 	}
 
+	template<typename _Stm, typename _Elm, typename _Trt>
+	inline _Stm&& __string_ptr_out_put(_Stm&& stm, basic_string_ptr<_Elm, _Trt> arr)
+	{
+		auto e = arr.end();
+		for (auto b = arr.begin(); b < e; ++b)
+		{
+			std::forward<_Stm>(stm) << *b;
+		}
+		return std::forward<_Stm>(stm);
+	}
 
 	template<typename _Stm, typename _Elm, typename _Trt>
 	inline _Stm&& operator << (_Stm&& stm, basic_string_ptr<_Elm, _Trt> arr)

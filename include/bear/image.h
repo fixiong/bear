@@ -1,4 +1,4 @@
-#ifndef _IMAGE_H
+﻿#ifndef _IMAGE_H
 #define _IMAGE_H
 
 #include "tensor.h"
@@ -26,7 +26,7 @@ namespace bear
 	public:
 		image_size() = default;
 		image_size(size_t _width, size_t _height) :height(_height), width(_width) {}
-		image_size(const tensor_size<2> &oth) :height(oth[0]), width(oth[1]){}
+		image_size(const tensor_size<2>& oth) :height(oth[0]), width(oth[1]) {}
 
 		size_t height = 0;
 		size_t width = 0;
@@ -39,32 +39,32 @@ namespace bear
 			return ret;
 		}
 
-		bool operator == (const image_size &oth)
+		bool operator == (const image_size& oth)
 		{
 			return width == oth.width && height == oth.height;
 		}
 
-		bool operator != (const image_size &oth)
+		bool operator != (const image_size& oth)
 		{
-			return width != oth.width || height!= oth.height;
+			return width != oth.width || height != oth.height;
 		}
 
-		friend bool operator == (const image_size &s1, const tensor_size<2> &s2)
-		{
-			return s1.width == s2[1] && s1.height == s2[0];
-		}
-
-		friend bool operator == (const tensor_size<2> &s2, const image_size &s1)
+		friend bool operator == (const image_size& s1, const tensor_size<2>& s2)
 		{
 			return s1.width == s2[1] && s1.height == s2[0];
 		}
 
-		friend bool operator != (const image_size &s1, const tensor_size<2> &s2)
+		friend bool operator == (const tensor_size<2>& s2, const image_size& s1)
+		{
+			return s1.width == s2[1] && s1.height == s2[0];
+		}
+
+		friend bool operator != (const image_size& s1, const tensor_size<2>& s2)
 		{
 			return s1.width != s2[1] || s1.height != s2[0];
 		}
 
-		friend bool operator != (const tensor_size<2> &s2, const image_size &s1)
+		friend bool operator != (const tensor_size<2>& s2, const image_size& s1)
 		{
 			return s1.width != s2[1] || s1.height != s2[0];
 		}
@@ -72,6 +72,7 @@ namespace bear
 
 	struct image_point
 	{
+		image_point() {}
 		image_point(pos_t _x, pos_t _y) :x(_x), y(_y) {}
 		//image_point(size_t _x, size_t _y) :x(_x), y(_y) {}
 		pos_t x = 0;
@@ -91,7 +92,7 @@ namespace bear
 	};
 
 	template<typename _Elm>
-	class base_image_ptr : public tensor_ptr<_Elm,2>
+	class base_image_ptr : public tensor_ptr<_Elm, 2>
 	{
 	public:
 
@@ -103,10 +104,10 @@ namespace bear
 
 		base_image_ptr() {}
 
-		explicit base_image_ptr(const base &oth) :base(oth) {}
+		explicit base_image_ptr(const base& oth) :base(oth) {}
 
 		template<typename _Oe>
-		base_image_ptr(const base_image_ptr<_Oe> &oth) :base(oth)
+		base_image_ptr(const base_image_ptr<_Oe>& oth) : base(oth)
 		{
 			//static_assert(std::is_convertible<_Oe *, _Elm *>::value, "element type not compatible!");
 			static_assert(sizeof(_Elm) == sizeof(_Oe), "element size is different!");
@@ -121,9 +122,9 @@ namespace bear
 				make_array_ptr(_data, _width),
 				_height,
 				_width_step
-				) {}
+			) {}
 
-		elm_type &pixel(size_t x, size_t y) const
+		elm_type& pixel(size_t x, size_t y) const
 		{
 			return this->at(y).at(x);
 		}
@@ -133,7 +134,7 @@ namespace bear
 			return base::empty();
 		}
 
-		const base &to_tensor() const
+		const base& to_tensor() const
 		{
 			return *this;
 		}
@@ -153,12 +154,12 @@ namespace bear
 			return this->size();
 		}
 
-		friend const base_image_ptr & to_ptr(const base_image_ptr & p)
+		friend const base_image_ptr& to_ptr(const base_image_ptr& p)
 		{
 			return p;
 		}
 
-		friend base_image_ptr & to_ptr(base_image_ptr & p)
+		friend base_image_ptr& to_ptr(base_image_ptr& p)
 		{
 			return p;
 		}
@@ -168,19 +169,19 @@ namespace bear
 	template<typename _Elm, size_t _Ch>
 	class image_ptr : public base_image_ptr<
 		typename std::conditional<
-			std::is_const<_Elm>::value,
-			const std::array<
-				typename std::remove_const<_Elm>::type,
-				_Ch
-			>,
-			std::array<_Elm,_Ch>
-		>::type >
+		std::is_const<_Elm>::value,
+		const std::array<
+		typename std::remove_const<_Elm>::type,
+		_Ch
+		>,
+		std::array<_Elm, _Ch>
+	>::type >
 	{
 	public:
 		using base = base_image_ptr<
 			typename std::conditional<
 			std::is_const<_Elm>::value,
-			const std::array<typename std::remove_const<_Elm>::type,_Ch>,
+			const std::array<typename std::remove_const<_Elm>::type, _Ch>,
 			std::array<_Elm, _Ch>
 			>::type >;
 
@@ -188,15 +189,15 @@ namespace bear
 		using normal_self = image_ptr<typename std::remove_const<_Elm>::type, _Ch>;
 		using elm_type = typename base::elm_type;
 		using channel_type = typename elm_type::value_type;
-		using elm_pointer = elm_type *;
+		using elm_pointer = elm_type*;
 		using tensor_type = typename base::base;
 
 		image_ptr() {}
 
-		explicit image_ptr(const tensor_type &oth) :base(oth) {}
+		explicit image_ptr(const tensor_type& oth) :base(oth) {}
 
-		template<typename _Elm_> 
-		image_ptr(const image_ptr<_Elm_,_Ch> &oth) :base(oth)
+		template<typename _Elm_>
+		image_ptr(const image_ptr<_Elm_, _Ch>& oth) : base(oth)
 		{
 			static_assert(
 				is_memory_compatible<elm_type, typename image_ptr<_Elm_, _Ch>::elm_type>::value,
@@ -204,14 +205,14 @@ namespace bear
 		}
 
 		image_ptr(
-			channel_type * _data,
+			channel_type* _data,
 			size_t _width_step,
 			size_t _width,
 			size_t _height) :
-			base((elm_pointer)_data,_width_step,_width,_height){}
+			base((elm_pointer)_data, _width_step, _width, _height) {}
 
 		image_ptr(
-			channel_type * _data,
+			channel_type* _data,
 			size_t _width_step,
 			image_size _size) :
 			base((elm_pointer)_data, _width_step, _size.width, _size.height) {}
@@ -249,15 +250,15 @@ namespace bear
 		void fill(channel_type _v, int _channel) const
 		{
 			this->for_each(
-				[_v,_channel](typename tensor_type::elm_type &p)
-			{
-				p[_channel] = _v;
-			});
+				[_v, _channel](typename tensor_type::elm_type& p)
+				{
+					p[_channel] = _v;
+				});
 		}
 
 		image_ptr clip(image_rectangle r) const
 		{
-			auto h = clip_at<0>(*(tensor_type *)this, r.pos.y, r.pos.y + r.size.height);
+			auto h = clip_at<0>(*(tensor_type*)this, r.pos.y, r.pos.y + r.size.height);
 			return image_ptr(clip_at<1>(h, r.pos.x, r.pos.x + r.size.width));
 		}
 
@@ -268,7 +269,7 @@ namespace bear
 	};
 
 	template<typename _Elm>
-	class image_ptr<_Elm,1> : public base_image_ptr<_Elm>
+	class image_ptr<_Elm, 1> : public base_image_ptr<_Elm>
 	{
 	public:
 		using base = base_image_ptr<_Elm>;
@@ -276,15 +277,15 @@ namespace bear
 		using normal_self = image_ptr<typename std::remove_const<_Elm>::type, 1>;
 		using channel_type = _Elm;
 		using elm_type = typename base::elm_type;
-		using elm_pointer = elm_type * ;
+		using elm_pointer = elm_type*;
 		using tensor_type = typename base::base;
 
 		image_ptr() {}
 
-		explicit image_ptr(const tensor_type &oth) :base(oth) {}
+		explicit image_ptr(const tensor_type& oth) :base(oth) {}
 
 		template<typename _Elm_>
-		image_ptr(const image_ptr<_Elm_, 1> &oth) :base(oth)
+		image_ptr(const image_ptr<_Elm_, 1>& oth) : base(oth)
 		{
 			static_assert(
 				is_memory_compatible<_Elm, _Elm_>::value,
@@ -379,7 +380,7 @@ namespace bear
 	public:
 		image() {}
 
-		image(image&& oth):
+		image(image&& oth) :
 			_data(std::move(oth._data)),
 			_ptr(oth._ptr)
 		{
@@ -397,7 +398,7 @@ namespace bear
 			return *this;
 		}
 
-		image(const image& oth):
+		image(const image& oth) :
 			_data(oth._data),
 			_ptr(
 				&_data[0],
@@ -421,13 +422,13 @@ namespace bear
 
 			return *this;
 		}
-		
 
-		image(data_type && __data, image_type ptr) :
+
+		image(data_type&& __data, image_type ptr) :
 			_data(std::move(__data)),
 			_ptr(ptr)
 		{
-			if (ptr.front().data() < (elm_type *)&_data[0] || ptr.back().data() > (elm_type *)&_data[0] + _data.size())
+			if (ptr.front().data() < (elm_type*)&_data[0] || ptr.back().data() > (elm_type*)&_data[0] + _data.size())
 			{
 				__on_bear_exception(
 					exception_type::pointer_outof_range,
@@ -436,7 +437,7 @@ namespace bear
 		}
 
 		image(size_t _width, size_t _height) :
-			_data(_width * _height * _Ch),
+			_data(_width* _height* _Ch),
 			_ptr(
 				&_data[0],
 				_width * sizeof(typename image_type::elm_type),
@@ -447,7 +448,7 @@ namespace bear
 
 		image(
 			image_size _size) :
-			_data(_size.width * _size.height * _Ch),
+			_data(_size.width* _size.height* _Ch),
 			_ptr(
 				&_data[0],
 				_size.width * sizeof(typename image_type::elm_type),
@@ -456,7 +457,7 @@ namespace bear
 		{
 		}
 
-		image &operator = (typename image_type::const_self oth)
+		image& operator = (typename image_type::const_self oth)
 		{
 			if (_ptr.width() != oth.width() ||
 				_ptr.height() != oth.height())
@@ -492,7 +493,7 @@ namespace bear
 			resize_canvas(image_size(_width, _height));
 		}
 
-		auto &pixel(size_t x, size_t y)
+		auto& pixel(size_t x, size_t y)
 		{
 			return _ptr.pixel(x, y);
 		}
@@ -509,7 +510,7 @@ namespace bear
 			return _ptr;
 		}
 
-		operator typename image_type::const_self () const
+		operator typename image_type::const_self() const
 		{
 			return _ptr;
 		}
@@ -542,7 +543,7 @@ namespace bear
 			return _ptr.size();
 		}
 
-		friend image_size size(const image & img)
+		friend image_size size(const image& img)
 		{
 			return image_size{ img.width(), img.height() };
 		}
@@ -672,13 +673,13 @@ namespace bear
 	}
 
 	template<typename _Elm, size_t _Ch, typename Alloc>
-	inline image_size size(const image<_Elm, _Ch, Alloc> & ts)
+	inline image_size size(const image<_Elm, _Ch, Alloc>& ts)
 	{
 		return image_size{ ts.width(),ts.height() };
 	}
 
 	template<typename _Elm, size_t _Ch, typename Alloc>
-	inline image<_Elm, _Ch, Alloc> bind_container(std::vector<_Elm, Alloc> &&ctn, const image_ptr<_Elm, _Ch> &ptr)
+	inline image<_Elm, _Ch, Alloc> bind_container(std::vector<_Elm, Alloc>&& ctn, const image_ptr<_Elm, _Ch>& ptr)
 	{
 		return image<_Elm, _Ch, Alloc>(std::move(ctn), ptr);
 	}
@@ -686,7 +687,7 @@ namespace bear
 	template<typename _Elm, size_t _Ch>
 	inline image<typename std::decay<_Elm>::type, _Ch,
 		std::allocator<typename std::decay<_Elm>::type>>
-		make_container(const image_ptr<_Elm, _Ch> &ptr)
+		make_container(const image_ptr<_Elm, _Ch>& ptr)
 	{
 		image<typename std::decay<_Elm>::type, _Ch> ret;
 
@@ -698,14 +699,14 @@ namespace bear
 
 
 	template<typename _Elm, size_t _Ch>
-	inline image_size size(const image_ptr<_Elm, _Ch> & img)
+	inline image_size size(const image_ptr<_Elm, _Ch>& img)
 	{
 		return image_size{ img.width(),img.height() };
 	}
 
 
 	template<typename _Elm, size_t _Ch>
-	inline image_size size(const image<_Elm, _Ch> & img)
+	inline image_size size(const image<_Elm, _Ch>& img)
 	{
 		return image_size{ img.width(),img.height() };
 	}
@@ -726,13 +727,13 @@ namespace bear
 
 
 	template<typename _Elm, size_t _Ch>
-	inline auto clip_image(const image<_Elm, _Ch> &t, image_rectangle r)
+	inline auto clip_image(const image<_Elm, _Ch>& t, image_rectangle r)
 	{
 		return to_ptr(t).clip(r);
 	}
 
 	template<typename _Elm, size_t _Ch>
-	inline auto clip_image(image<_Elm, _Ch> &t, image_rectangle r)
+	inline auto clip_image(image<_Elm, _Ch>& t, image_rectangle r)
 	{
 		return to_ptr(t).clip(r);
 	}
@@ -750,13 +751,13 @@ namespace bear
 	}
 
 	template<typename _Elm, size_t _Ch>
-	inline size_t width(const image<_Elm, _Ch> &t)
+	inline size_t width(const image<_Elm, _Ch>& t)
 	{
 		return t.width();
 	}
 
 	template<typename _Elm, size_t _Dim>
-	inline size_t width(const tensor<_Elm, _Dim> &t)
+	inline size_t width(const tensor<_Elm, _Dim>& t)
 	{
 		return width(to_ptr(t));
 	}
@@ -774,13 +775,13 @@ namespace bear
 	}
 
 	template<typename _Elm, size_t _Ch>
-	inline size_t height(const image<_Elm, _Ch> &t)
+	inline size_t height(const image<_Elm, _Ch>& t)
 	{
 		return t.height();
 	}
 
 	template<typename _Elm, size_t _Dim>
-	inline size_t height(const tensor<_Elm, _Dim> &t)
+	inline size_t height(const tensor<_Elm, _Dim>& t)
 	{
 		return height(to_ptr(t));
 	}
@@ -798,19 +799,19 @@ namespace bear
 	}
 
 	template<typename _Elm, size_t _Dim>
-	inline size_t channel_size(const tensor<_Elm, _Dim> &t)
+	inline size_t channel_size(const tensor<_Elm, _Dim>& t)
 	{
 		return channel_size(to_ptr(t));
 	}
 
 	template<typename _Elm, size_t _Ch>
-	inline size_t channel_size(image_ptr<_Elm,_Ch> t)
+	inline size_t channel_size(image_ptr<_Elm, _Ch> t)
 	{
 		return t.channel_size();
 	}
 
 	template<typename _Elm, size_t _Ch>
-	inline size_t channel_size(const image<_Elm, _Ch> &t)
+	inline size_t channel_size(const image<_Elm, _Ch>& t)
 	{
 		return t.channel_size();
 	}

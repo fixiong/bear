@@ -585,14 +585,14 @@ namespace bear
 		}
 
 		template<typename _Elm>
-		dynamic_image_ptr(base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>>& img)
+		dynamic_image_ptr(base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>> img)
 		{
 			static_assert(!std::is_const<_Elm>::value, "should not be const");
 			_info = get_image_info(img);
 		}
 
 		template<typename _Elm>
-		dynamic_image_ptr(base_tensor_ptr<base_tensor_ptr<_Elm>>& img)
+		dynamic_image_ptr(base_tensor_ptr<array_ptr<_Elm>> img)
 		{
 			static_assert(!std::is_const<_Elm>::value, "should not be const");
 			_info = get_image_info(img);
@@ -641,11 +641,6 @@ namespace bear
 		operator cv::Mat()
 		{
 			int type = get_image_cv_type(_info);
-
-			if (!type)
-			{
-				throw bear_exception(exception_type::other_error, "wrong img type!");
-			}
 
 			cv::Mat ret((int)_info._height, (int)_info._width, type, _info._data, (int)_info._width_step);
 			return ret;
@@ -792,13 +787,13 @@ namespace bear
 		}
 
 		template<typename _Elm>
-		const_dynamic_image_ptr(const base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>>& img)
+		const_dynamic_image_ptr(base_tensor_ptr<base_tensor_ptr<array_ptr<_Elm>>> img)
 		{
 			_info = get_image_info(img);
 		}
 
 		template<typename _Elm>
-		const_dynamic_image_ptr(const base_tensor_ptr<base_tensor_ptr<_Elm>>& img)
+		const_dynamic_image_ptr(base_tensor_ptr<array_ptr<_Elm>> img)
 		{
 			_info = get_image_info(img);
 		}
@@ -978,7 +973,7 @@ namespace bear
 		dynamic_image& operator = (const dynamic_image& other) = default;
 
 
-		dynamic_image(dynamic_image&& other) noexcept:
+		dynamic_image(dynamic_image&& other) noexcept :
 			_data(std::move(other._data))
 		{
 			_info = other._info;
@@ -998,7 +993,7 @@ namespace bear
 		}
 
 		dynamic_image(const_dynamic_image_ptr other) noexcept :
-			_data(other.elm_size() * other.channel_size() * other.width() * other.height())
+			_data(other.elm_size()* other.channel_size()* other.width()* other.height())
 		{
 			_info._width = other.width();
 			_info._height = other.height();;
@@ -1007,7 +1002,7 @@ namespace bear
 			_info._elm_size = other.elm_size();
 			_info._data = &_data[0];
 			_info._width_step = other.elm_size() * other.channel_size() * other.width();
-			
+
 			for (size_t i = 0; i < _info._height; ++i)
 			{
 				memcpy(
