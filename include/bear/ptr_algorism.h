@@ -7,8 +7,8 @@ namespace bear
 {
 	template<typename _T1>
 	inline bool zip_check_size(
-		size_t &size,
-		const _T1 &t1)
+		size_t& size,
+		const _T1& t1)
 	{
 		size = t1.size();
 		return true;
@@ -16,9 +16,9 @@ namespace bear
 
 	template<typename _T1, typename _T2, typename ... _Ts>
 	inline bool zip_check_size(
-		size_t &size,
-		const _T1 &t1,
-		const _T2 &t2,
+		size_t& size,
+		const _T1& t1,
+		const _T2& t2,
 		const _Ts & ... ts)
 	{
 		auto s1 = t1.size();
@@ -29,7 +29,7 @@ namespace bear
 
 	template<typename ... _Ts>
 	inline bool zip_check_size(
-		std::array<size_t, 1> &size,
+		std::array<size_t, 1>& size,
 		const _Ts & ... ts)
 	{
 		return zip_check_size(size[0], ts ...);
@@ -37,24 +37,24 @@ namespace bear
 
 	template<size_t _Lv, typename ... _Ts>
 	inline bool zip_check_size(
-		std::array<size_t, _Lv> &size,
+		std::array<size_t, _Lv>& size,
 		const _Ts & ... ts)
 	{
 		static_assert(_Lv >= 1, "dim can't be zero!");
 		if (!zip_check_size(size[0], ts ...))return false;
-		return zip_check_size(*(std::array<size_t, _Lv - 1> *)&size[1], *ts.begin() ...);
+		return zip_check_size(*(std::array<size_t, _Lv - 1> *) & size[1], *ts.begin() ...);
 	}
 
 
 	template<typename _T1>
-	inline void _zip_increase(_T1 & t1)
+	inline void _zip_increase(_T1& t1)
 	{
 		++t1;
 	}
 
 	template<typename _T1, typename ... _Ts>
 	inline void _zip_increase(
-		_T1 & t1,
+		_T1& t1,
 		_Ts & ... ts)
 	{
 		++t1;
@@ -65,7 +65,7 @@ namespace bear
 
 	template<typename _Fn, typename ... _Ts>
 	inline void zip(
-		_Fn && fn,
+		_Fn&& fn,
 		size_t size,
 		_Ts ... ts)
 	{
@@ -79,8 +79,8 @@ namespace bear
 
 	template<typename _Fn, typename ... _Ts>
 	inline void zip(
-		_Fn && fn,
-		const std::array<size_t, 1> &size,
+		_Fn&& fn,
+		const std::array<size_t, 1>& size,
 		_Ts ... ts)
 	{
 
@@ -93,8 +93,8 @@ namespace bear
 
 	template<size_t _Lv, typename _Fn, typename ... _Ts>
 	inline void zip(
-		_Fn && fn,
-		const std::array<size_t, _Lv> &size,
+		_Fn&& fn,
+		const std::array<size_t, _Lv>& size,
 		_Ts ... ts)
 	{
 
@@ -102,14 +102,14 @@ namespace bear
 		{
 			zip(
 				std::forward<_Fn>(fn),
-				*(const std::array<size_t, _Lv - 1> *)&size[1],
+				*(const std::array<size_t, _Lv - 1> *) & size[1],
 				ts->begin() ...);
 		}
 	}
 
 	template<size_t _Lv, typename _Fn, typename ... _Ts>
 	inline void zip_to(
-		_Fn && fn,
+		_Fn&& fn,
 		_Ts && ... ts)
 	{
 
@@ -128,13 +128,13 @@ namespace bear
 
 	template<typename _Fn, typename _Tr, typename ... _Ts>
 	inline void zip_r(
-		_Fn && fn,
+		_Fn&& fn,
 		size_t size,
 		_Tr tr,
 		_Ts ... ts)
 	{
 
-		for (size_t i = size; i; _zip_increase(tr,ts ...), --i)
+		for (size_t i = size; i; _zip_increase(tr, ts ...), --i)
 		{
 			*tr = std::forward<_Fn>(fn)(*ts ...);
 		}
@@ -143,13 +143,13 @@ namespace bear
 
 	template<typename _Fn, typename _Tr, typename ... _Ts>
 	inline void zip_r(
-		_Fn && fn,
-		const std::array<size_t, 1> &size,
+		_Fn&& fn,
+		const std::array<size_t, 1>& size,
 		_Tr tr,
 		_Ts ... ts)
 	{
 
-		for (size_t i = size[0]; i; _zip_increase(tr,ts ...), --i)
+		for (size_t i = size[0]; i; _zip_increase(tr, ts ...), --i)
 		{
 			*tr = std::forward<_Fn>(fn)(*ts ...);
 		}
@@ -158,8 +158,8 @@ namespace bear
 
 	template<size_t _Lv, typename _Fn, typename ... _Ts>
 	inline void zip_r(
-		_Fn && fn,
-		const std::array<size_t, _Lv> &size,
+		_Fn&& fn,
+		const std::array<size_t, _Lv>& size,
 		_Ts ... ts)
 	{
 
@@ -167,14 +167,14 @@ namespace bear
 		{
 			zip_r(
 				std::forward<_Fn>(fn),
-				*(const std::array<size_t, _Lv - 1> *)&size[1],
+				*(const std::array<size_t, _Lv - 1> *) & size[1],
 				ts->begin() ...);
 		}
 	}
 
 	template<size_t _Lv, typename _Fn, typename ... _Ts>
 	inline void zip_r_to(
-		_Fn && fn,
+		_Fn&& fn,
 		_Ts && ... ts)
 	{
 
@@ -193,27 +193,27 @@ namespace bear
 	template<typename _T1, typename ... _Ts>
 	struct is_same_dim : public std::integral_constant<bool,
 		ptr_traits<_T1>::dim == is_same_dim<_Ts...>::dim
-	> 
+	>
 	{
 		static constexpr size_t dim = ptr_traits<_T1>::dim;
 	};
 
 	template<typename _T1>
-	struct is_same_dim<_T1> : public std::integral_constant<bool,true>
+	struct is_same_dim<_T1> : public std::integral_constant<bool, true>
 	{
 		static constexpr size_t dim = ptr_traits<_T1>::dim;
 	};
-	
+
 
 	template<typename _Re, size_t dim>
 	struct __map_function
 	{
 		template<typename _Fun, typename _T1, typename ... _Ts>
-		static auto run(_Fun && fn, const _T1 & t1, const _Ts &... ts)
+		static auto run(_Fun&& fn, const _T1& t1, const _Ts &... ts)
 		{
 			using result_elm = typename std::decay<_Re>::type;
 
-			using ctn_type = typename 
+			using ctn_type = typename
 				ptr_traits<
 				typename ptr_change_elm<typename std::decay<decltype(t1)>::type, result_elm>::type
 				>::container_type;
@@ -227,10 +227,10 @@ namespace bear
 	};
 
 	template<size_t dim>
-	struct __map_function<void,dim>
+	struct __map_function<void, dim>
 	{
 		template<typename _Fun, typename ... _Ts>
-		static void run(_Fun && fn, const _Ts &... ts)
+		static void run(_Fun&& fn, const _Ts &... ts)
 		{
 			zip_to<dim>(std::forward<_Fun>(fn), ts ...);
 		}
@@ -238,7 +238,7 @@ namespace bear
 
 
 	template<typename _Fun, typename ... _Ts>
-	inline auto map_function(_Fun && fn, _Ts && ... ts)
+	inline auto map_function(_Fun&& fn, _Ts && ... ts)
 	{
 		using dim_test = is_same_dim<typename std::decay<decltype(to_ptr(ts))>::type ...>;
 
@@ -260,15 +260,15 @@ namespace bear
 
 	template<typename _T1>
 	inline bool _is_same_size(
-		const _T1 &t1)
+		const _T1& t1)
 	{
 		return true;
 	}
 
 	template<typename _T1, typename _T2, typename ... _Ts>
 	inline bool _is_same_size(
-		const _T1 &t1,
-		const _T2 &t2,
+		const _T1& t1,
+		const _T2& t2,
 		const _Ts & ... ts)
 	{
 		if (t1.size() != t2.size())return false;
@@ -312,7 +312,7 @@ namespace bear
 
 
 	template<typename _Tl, typename _Tr>
-	inline int compare(_Tl && p, _Tr && q
+	inline int compare(_Tl&& p, _Tr&& q
 
 		, typename type_exist<
 		typename ptr_flag<typename std::decay<_Tl>::type>::not_both,
@@ -326,7 +326,7 @@ namespace bear
 
 
 	template<typename _Tl, typename _Tr>
-	inline int compare(_Tl && p, _Tr && q
+	inline int compare(_Tl&& p, _Tr&& q
 
 		, typename type_exist<
 		typename ptr_flag<typename std::decay<_Tl>::type>::is_one,
@@ -371,7 +371,7 @@ namespace bear
 
 
 	template<typename _T>
-	inline auto clip(_T && oth, size_t start, size_t end
+	inline auto clip(_T&& oth, size_t start, size_t end
 
 		, typename ptr_flag<typename std::decay<_T>::type>::is_1d _ = std::true_type()
 
@@ -380,13 +380,13 @@ namespace bear
 		return to_ptr(oth).clip(start, end);
 	}
 
-        template<typename T>
-        inline void _____dummy(T)
-        {
-        }
+	template<typename T>
+	inline void _____dummy(T)
+	{
+	}
 
 	template<typename _T1, typename _T2>
-	inline void copy(_T1 && dst, _T2 && src
+	inline void copy(_T1&& dst, _T2&& src
 
 		, typename type_exist<
 		typename ptr_flag<typename std::decay<_T1>::type>::is_one,
@@ -395,19 +395,19 @@ namespace bear
 
 	)
 	{
-            _____dummy(_);
+		_____dummy(_);
 		using d_trait = ptr_traits<typename std::decay<decltype(to_ptr(dst))>::type>;
 		using s_trait = ptr_traits<typename std::decay<decltype(to_ptr(src))>::type>;
 
 		using d_elm = typename d_trait::elm_type;
 		using s_elm = typename s_trait::elm_type;
 
-		map_function([](d_elm &d, const s_elm &s) {d = s; }, dst, src);
+		map_function([](d_elm& d, const s_elm& s) {d = s; }, dst, src);
 	}
 
 
 	template<typename _T, typename _Fun>
-	inline void for_each(_T && dst, _Fun && fun
+	inline void for_each(_T&& dst, _Fun&& fun
 
 		, typename ptr_flag<typename std::decay<_T>::type>::is_one
 		_ = std::true_type()
@@ -418,7 +418,7 @@ namespace bear
 
 
 	template<typename _T, typename _V>
-	inline void fill(_T && dst, _V && vl
+	inline void fill(_T&& dst, _V&& vl
 
 		, typename ptr_flag<typename std::decay<_T>::type>::is_one
 		_ = std::true_type()
@@ -427,11 +427,11 @@ namespace bear
 		using d_trait = ptr_traits<typename std::decay<decltype(to_ptr(dst))>::type>;
 		using d_elm = typename d_trait::elm_type;
 
-		map_function([vl](d_elm & v) {v = vl; }, dst);
+		map_function([vl](d_elm& v) {v = vl; }, dst);
 	}
 
 	template<typename _T>
-	inline auto sum(_T && ctn)
+	inline auto sum(_T&& ctn)
 	{
 		typename std::decay<decltype(*(ctn.begin()) + *(ctn.begin()))>::type
 			ret = 0;
@@ -450,14 +450,14 @@ namespace bear
 	struct _tensor_get
 	{
 		template<typename _T>
-		static auto _get_size(const _T & t)
+		static auto _get_size(const _T& t)
 		{
 			return _tensor_get<i - 1>::_get_size(t.front());
 		}
 
 
 		template<typename _T>
-		static auto _get_step(const _T & t)
+		static auto _get_step(const _T& t)
 		{
 			return _tensor_get<i - 1>::_get_step(t.front());
 		}
@@ -467,13 +467,13 @@ namespace bear
 	struct _tensor_get<0>
 	{
 		template<typename _T>
-		static auto _get_size(const _T & t)
+		static auto _get_size(const _T& t)
 		{
 			return t.size();
 		}
 
 		template<typename _T>
-		static auto _get_step(const _T & t)
+		static auto _get_step(const _T& t)
 		{
 			return t.move_step();
 		}
@@ -481,14 +481,25 @@ namespace bear
 
 
 	template<size_t _Dim, typename _T>
-	size_t size_at(_T &&ts)
+	size_t size_at(_T&& ts)
 	{
 		return _tensor_get<_Dim>::_get_size(ts);
 	}
 
 	template<size_t _Dim, typename _T>
-	size_t move_step_at(_T &&ts)
+	size_t move_step_at(_T&& ts)
 	{
 		return _tensor_get<_Dim>::_get_step(ts);
 	}
+
+	template<typename _Elm, typename _T>
+	inline auto element_cast(const _T& ts)
+	{
+		using l_trait = ptr_traits<typename std::decay<decltype(to_ptr(ts))>::type>;
+
+		using l_elm = typename l_trait::elm_type;
+
+		return map_function([](l_elm v) { return static_cast<_Elm>(v); }, ts);
+	}
+
 }

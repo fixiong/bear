@@ -47,7 +47,7 @@ namespace bear
 
 	public:
 
-		tensor(data_type && __data, const ptr_type &ptr) :
+		tensor(data_type&& __data, const ptr_type& ptr) :
 			_data(std::move(__data)),
 			_ptr(ptr)
 		{
@@ -61,7 +61,7 @@ namespace bear
 
 		tensor() {}
 
-		tensor(tensor&& oth):
+		tensor(tensor&& oth) :
 			_data(std::move(oth._data)),
 			_ptr(oth._ptr)
 		{
@@ -91,7 +91,7 @@ namespace bear
 			if (this == &oth) return *this;
 
 			_data = oth._data;
-			_ptr = image_type(&_data[0], bear::size(oth._ptr));
+			_ptr = ptr_type(&_data[0], bear::size(oth._ptr));
 
 			return *this;
 		}
@@ -103,13 +103,13 @@ namespace bear
 		{
 		}
 
-		tensor(const deep_size_type &sizes) :
+		tensor(const deep_size_type& sizes) :
 			_data(total_size(sizes)),
 			_ptr(&_data[0], sizes)
 		{
 		}
 
-		tensor &operator = (const ptr_type& oth)
+		tensor& operator = (const ptr_type& oth)
 		{
 			if (bear::size(_ptr) != size(oth))
 			{
@@ -124,7 +124,7 @@ namespace bear
 			return size() == 0;
 		}
 
-		void resize(const deep_size_type &_size)
+		void resize(const deep_size_type& _size)
 		{
 			if (bear::size(_ptr) == _size)return;
 
@@ -267,7 +267,7 @@ namespace bear
 	}
 
 	template<typename _Elm, size_t _Dim, typename Alloc>
-	inline tensor_size<_Dim> size(const tensor<_Elm, _Dim, Alloc> & ts)
+	inline tensor_size<_Dim> size(const tensor<_Elm, _Dim, Alloc>& ts)
 	{
 		return size(to_ptr(ts));
 	}
@@ -276,7 +276,7 @@ namespace bear
 	inline tensor<
 		typename base_tensor_ptr<_Base>::elm_type,
 		base_tensor_ptr<_Base>::dim,
-		Alloc> bind_container(std::vector<_Elm, Alloc> &&ctn, const base_tensor_ptr<_Base> &ptr)
+		Alloc> bind_container(std::vector<_Elm, Alloc>&& ctn, const base_tensor_ptr<_Base>& ptr)
 	{
 		return tensor<
 			typename base_tensor_ptr<_Base>::elm_type,
@@ -289,7 +289,7 @@ namespace bear
 		typename std::decay<typename base_tensor_ptr<_Base>::elm_type>::type,
 		base_tensor_ptr<_Base>::dim, std::allocator<
 		typename std::decay<typename base_tensor_ptr<_Base>::elm_type>::type>
-	> make_container(const base_tensor_ptr<_Base> & oth)
+	> make_container(const base_tensor_ptr<_Base>& oth)
 	{
 		using _Elm = typename std::decay<typename base_tensor_ptr<_Base>::elm_type>::type;
 
@@ -301,14 +301,14 @@ namespace bear
 	}
 
 	template<typename _Elm, typename Alloc, typename ... _Sz>
-	inline auto reshape(std::vector<_Elm, Alloc> && oth, _Sz ... _sizes)
+	inline auto reshape(std::vector<_Elm, Alloc>&& oth, _Sz ... _sizes)
 	{
 		auto ptr = reshape(oth, _sizes ...);
 		return bind_container(std::move(oth), ptr);
 	}
 
 	template<typename _Elm, typename Alloc, size_t _Dim>
-	inline auto reshape(std::vector<_Elm, Alloc> && oth, const tensor_size<_Dim> &sizes)
+	inline auto reshape(std::vector<_Elm, Alloc>&& oth, const tensor_size<_Dim>& sizes)
 	{
 		auto ptr = reshape(oth, sizes);
 		return bind_container(std::move(oth), ptr);
@@ -342,23 +342,23 @@ namespace bear
 	private:
 
 
-		size_t _make_data(const deep_size_type & sz)
+		size_t _make_data(const deep_size_type& sz)
 		{
 			constexpr const size_t line_size = (sz.back() * sizeof(elm_type) + _Aln - 1) / _Aln * _Aln;
 
 			buf = new char[total_size(sz) / sz.back() * line_size + _Aln - 1];
 
-			size_t pd = reinterpret_cast<size_t &>(buf);
+			size_t pd = reinterpret_cast<size_t&>(buf);
 
 			pd = (pd + _Aln - 1) / _Aln * _Aln;
 
-			_data = reinterpret_cast<elm_type * &>(pd);
+			_data = reinterpret_cast<elm_type*&>(pd);
 
 			return line_size;
 		}
 
-		char * buf = 0;
-		elm_type * _data = 0;
+		char* buf = 0;
+		elm_type* _data = 0;
 		ptr_type _ptr;
 
 	public:
@@ -373,9 +373,9 @@ namespace bear
 		template<typename ... _T>
 		aligned_tensor(_T ... sizes);
 
-		aligned_tensor(const deep_size_type &sizes);
+		aligned_tensor(const deep_size_type& sizes);
 
-		aligned_tensor &operator = (const ptr_type& oth)
+		aligned_tensor& operator = (const ptr_type& oth)
 		{
 			if (size(_ptr) != size(oth))
 			{
@@ -386,12 +386,12 @@ namespace bear
 		}
 
 		aligned_tensor(const aligned_tensor&) = delete;
-		aligned_tensor &operator =(const aligned_tensor&) = delete;
+		aligned_tensor& operator =(const aligned_tensor&) = delete;
 
-		aligned_tensor(aligned_tensor &&_other);
-		aligned_tensor & operator =(aligned_tensor&& _other);
+		aligned_tensor(aligned_tensor&& _other);
+		aligned_tensor& operator =(aligned_tensor&& _other);
 
-		void resize(const deep_size_type &_size)
+		void resize(const deep_size_type& _size)
 		{
 			if (size(_ptr) == _size)return;
 
@@ -411,12 +411,12 @@ namespace bear
 		}
 
 
-		friend const ptr_type &to_ptr(aligned_tensor &img)
+		friend const ptr_type& to_ptr(aligned_tensor& img)
 		{
 			return img._ptr;
 		}
 
-		friend typename ptr_type::const_self to_ptr(const aligned_tensor &img)
+		friend typename ptr_type::const_self to_ptr(const aligned_tensor& img)
 		{
 			return img._ptr;
 		}
@@ -490,12 +490,12 @@ namespace bear
 			return _ptr.at(i);
 		}
 
-		value_type & operator[](size_t i)
+		value_type& operator[](size_t i)
 		{
 			return _ptr.at(i);
 		}
 
-		const_value_type & operator[](size_t i) const
+		const_value_type& operator[](size_t i) const
 		{
 			return _ptr.at(i);
 		}

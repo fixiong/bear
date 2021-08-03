@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "ptr_algorism.h"
 #include "tensor.h"
@@ -8,8 +8,8 @@
 namespace bear
 {
 	template<typename _Bl, typename _Br>
-	inline auto add(_Bl && ls, _Br && rs
-		,typename type_exist<decltype(to_ptr(ls)), decltype(to_ptr(rs))>::type = std::true_type()
+	inline auto add(_Bl&& ls, _Br&& rs
+		, typename type_exist<decltype(to_ptr(ls)), decltype(to_ptr(rs))>::type = std::true_type()
 	)
 	{
 		using l_trait = ptr_traits<typename std::decay<decltype(to_ptr(ls))>::type>;
@@ -22,7 +22,7 @@ namespace bear
 	}
 
 	template<typename _Bl, typename _Br>
-	inline auto add(_Bl && ls, _Br && rs
+	inline auto add(_Bl&& ls, _Br&& rs
 		, typename type_exist<decltype(to_ptr(ls)),
 		typename ptr_flag<typename std::decay<decltype(rs)>::type>::not_both>
 		::type = std::true_type()
@@ -35,7 +35,7 @@ namespace bear
 	}
 
 	template<typename _Bl, typename _Br>
-	inline auto add(_Bl && ls, _Br && rs
+	inline auto add(_Bl&& ls, _Br&& rs
 		, typename type_exist<decltype(to_ptr(rs)),
 		typename ptr_flag<typename std::decay<decltype(ls)>::type>::not_both>
 		::type = std::true_type()
@@ -49,7 +49,7 @@ namespace bear
 
 
 	template<typename _Bl, typename _Br>
-	inline decltype(add(____get_t<_Bl>::run(), ____get_t<_Br>::run())) operator + (_Bl && ls, _Br && rs)
+	inline decltype(add(____get_t<_Bl>::run(), ____get_t<_Br>::run())) operator + (_Bl&& ls, _Br&& rs)
 	{
 		return add(ls, rs);
 	}
@@ -57,7 +57,7 @@ namespace bear
 
 
 	template<typename _Bl, typename _Br>
-	inline _Bl & add_inplace(_Bl && ls, _Br && rs
+	inline _Bl& add_inplace(_Bl&& ls, _Br&& rs
 		, typename type_exist<decltype(to_ptr(ls)), decltype(to_ptr(rs))>::type = std::true_type()
 	)
 	{
@@ -67,7 +67,7 @@ namespace bear
 		using l_elm = typename l_trait::elm_type;
 		using r_elm = typename r_trait::elm_type;
 
-		map_function([](l_elm &l, r_elm r) {l += r; }, ls, rs);
+		map_function([](l_elm& l, r_elm r) {l += r; }, ls, rs);
 
 		return ls;
 	}
@@ -75,7 +75,7 @@ namespace bear
 
 
 	template<typename _Bl, typename _Br>
-	inline _Bl & add_inplace(_Bl && ls, _Br && rs
+	inline _Bl& add_inplace(_Bl&& ls, _Br&& rs
 		, typename type_exist<decltype(to_ptr(ls)),
 		typename ptr_flag<typename std::decay<decltype(rs)>::type>::not_both>
 		::type = std::true_type()
@@ -84,48 +84,32 @@ namespace bear
 		using l_trait = ptr_traits<typename std::decay<decltype(to_ptr(ls))>::type>;
 		using l_elm = typename l_trait::elm_type;
 
-		map_function([rs](l_elm &l) {l += rs; }, ls);
+		map_function([rs](l_elm& l) {l += rs; }, ls);
 
 		return ls;
 	}
 
 	template<typename _Bl, typename _Br>
-	inline decltype(add_inplace(____get_t<_Bl>::run(), ____get_t<_Br>::run())) operator += (_Bl && ls, _Br && rs)
+	inline decltype(add_inplace(____get_t<_Bl>::run(), ____get_t<_Br>::run())) operator += (_Bl&& ls, _Br&& rs)
 	{
 		return add_inplace(ls, rs);
 	}
 
-
-
-
-	template<typename _Elm, typename _T>
-	inline auto element_cast(const _T & ts)
-	{
-		using l_trait = ptr_traits<typename std::decay<decltype(to_ptr(ts))>::type>;
-
-		using l_elm = typename l_trait::elm_type;
-
-		return map_function([](l_elm v) { return static_cast<_Elm>(v); }, ts); 
-	}
-
-
-
-
 	template<size_t dim>
-	struct __dot{};
+	struct __dot {};
 
 
 	template<>
 	struct __dot<1>
 	{
 		template<typename _Bl, typename _Br>
-		static auto run(_Bl && ls, _Br && rs)
+		static auto run(_Bl&& ls, _Br&& rs)
 		{
 			using l_trait = ptr_traits<typename std::decay<decltype(to_ptr(ls))>::type>;
 			using r_trait = ptr_traits<typename std::decay<decltype(to_ptr(rs))>::type>;
 
 			using elm_type = typename std::decay<
-				decltype(l_trait::get_elm() * r_trait::get_elm() + l_trait::get_elm() * r_trait::get_elm())>::type;
+				decltype(l_trait::get_elm()* r_trait::get_elm() + l_trait::get_elm() * r_trait::get_elm())>::type;
 
 			using l_elm = typename l_trait::elm_type;
 			using r_elm = typename r_trait::elm_type;
@@ -136,9 +120,9 @@ namespace bear
 			elm_type ret(ls[0] * rs[0]);
 
 			zip_to<1>([&ret](l_elm ls, r_elm rs)
-			{
-				ret += ls * rs;
-			}, clip(ls, 1, ls.size()), clip(rs, 1, rs.size()));
+				{
+					ret += ls * rs;
+				}, clip(ls, 1, ls.size()), clip(rs, 1, rs.size()));
 
 			return ret;
 
@@ -146,16 +130,16 @@ namespace bear
 	};
 
 	template<>
-	struct __dot<2> 
+	struct __dot<2>
 	{
 		template<typename _Bl, typename _Br>
-		static auto run(_Bl && ls, _Br && rs)
+		static auto run(_Bl&& ls, _Br&& rs)
 		{
 			using l_trait = ptr_traits<typename std::decay<decltype(to_ptr(ls))>::type>;
 			using r_trait = ptr_traits<typename std::decay<decltype(to_ptr(rs))>::type>;
 
 			using elm_type = typename std::decay<
-				decltype(l_trait::get_elm() * r_trait::get_elm() + l_trait::get_elm() * r_trait::get_elm())>::type;
+				decltype(l_trait::get_elm()* r_trait::get_elm() + l_trait::get_elm() * r_trait::get_elm())>::type;
 
 			using l_elm = typename l_trait::elm_type;
 			using r_elm = typename r_trait::elm_type;
@@ -194,7 +178,7 @@ namespace bear
 	};
 
 	template<typename _Bl, typename _Br>
-	inline auto dot(_Bl && ls, _Br && rs
+	inline auto dot(_Bl&& ls, _Br&& rs
 		, typename type_exist<decltype(to_ptr(ls)), decltype(to_ptr(rs))>::type = std::true_type()
 	)
 	{

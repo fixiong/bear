@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "string_ptr.h"
 
@@ -74,7 +74,7 @@ namespace bear
 	};
 
 
-	inline void __on_bear_exception(unsigned int t, const char * e)
+	inline void __on_bear_exception(unsigned int t, const char* e)
 	{
 		throw bear_exception(t, e);
 	}
