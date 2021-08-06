@@ -178,7 +178,7 @@ namespace bear
 
 		value_type at(size_t i) const
 		{
-#ifdef _DEBUG
+#ifdef _BEAR_BORDER_CHECK
 			assert(i < size());
 #endif
 			return *(begin() + (difference_type)i);
@@ -252,7 +252,7 @@ namespace bear
 
 		inline auto clip(size_t start, size_t end) const
 		{
-#ifdef _DEBUG
+#ifdef _BEAR_BORDER_CHECK
 			assert(end <= size() && start <= end);
 #endif
 			return base_tensor_ptr(at(start), end - start);
@@ -261,7 +261,7 @@ namespace bear
 		template<typename ... _T>
 		inline auto clip(size_t start, size_t end, _T ... arg) const
 		{
-#ifdef _DEBUG
+#ifdef _BEAR_BORDER_CHECK
 			assert(end <= size() && start <= end);
 #endif
 			return base_tensor_ptr((_pointer + start)->clip(arg ...),
@@ -410,9 +410,9 @@ namespace bear
 	inline auto __enlage(const array_ptr<_Elm> &oth, size_t sz, size_t up_step)
 	{
 
-//#ifdef _DEBUG
+//#ifdef _BEAR_BORDER_CHECK
 //		assert(up_step == oth.size() * oth.move_step());
-//#endif // _DEBUG
+//#endif // _BEAR_BORDER_CHECK
 
 		return array_ptr<_Elm>(oth.data(), sz * oth.size());
 	}
@@ -425,9 +425,9 @@ namespace bear
 			return base_tensor_ptr<_Elm>(oth.front(), sz * oth.size(), oth.move_step());
 		}
 
-//#ifdef _DEBUG
+//#ifdef _BEAR_BORDER_CHECK
 //		assert(1 == oth.size());
-//#endif // _DEBUG
+//#endif // _BEAR_BORDER_CHECK
 
 		return base_tensor_ptr<_Elm>(oth.front(), sz, up_step);
 	}

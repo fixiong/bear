@@ -6,6 +6,11 @@
 #include<vector>
 #include<string>
 
+#if  _DEBUG
+
+#define _BEAR_BORDER_CHECK
+
+#endif
 
 namespace bear
 {

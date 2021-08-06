@@ -115,7 +115,7 @@ namespace bear
 
 		std::array<size_t, _Lv> sizes;
 
-#ifdef _DEBUG
+#ifdef _BEAR_BORDER_CHECK
 		assert(zip_check_size(sizes, ts ...));
 #else
 		zip_check_size(sizes, ts ...);
@@ -180,7 +180,7 @@ namespace bear
 
 		std::array<size_t, _Lv> sizes;
 
-#ifdef _DEBUG
+#ifdef _BEAR_BORDER_CHECK
 		assert(zip_check_size(sizes, ts ...));
 #else
 		zip_check_size(sizes, ts ...);

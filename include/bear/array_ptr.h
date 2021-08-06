@@ -139,7 +139,7 @@ namespace bear
 
 		value_type & at(size_t i) const
 		{
-#ifdef _DEBUG
+#ifdef _BEAR_BORDER_CHECK
 			assert(i < size());
 #endif
 			return *(_pointer + i);
@@ -204,7 +204,7 @@ namespace bear
 
 		inline auto clip(size_t start, size_t end) const
 		{
-#ifdef _DEBUG
+#ifdef _BEAR_BORDER_CHECK
 			assert(end <= size() && start <= end);
 #endif
 			return array_ptr(data() + start, end - start);
