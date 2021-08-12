@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "ptr_types.h"
 
@@ -12,7 +12,7 @@ namespace bear
 	template<typename _T>
 	struct ____get_t
 	{
-		static typename std::decay<_T>::type &run();
+		static typename std::decay<_T>::type& run();
 	};
 
 	template<typename ... _Ts>
@@ -29,19 +29,19 @@ namespace bear
 	{
 		using type = typename tuple_push_back<
 			typename make_type_index<_sz - 1>::type,
-			std::integral_constant<size_t,_sz - 1>>::type;
+			std::integral_constant<size_t, _sz - 1>>::type;
 	};
 
 	template<>
 	struct make_type_index<1>
 	{
-		using type = std::integral_constant<size_t, 0> ;
+		using type = std::integral_constant<size_t, 0>;
 	};
 
 	template<typename _Fn, typename ... _T, typename ... _Idx>
 	inline void __unpack_arg(
-		_Fn && fn,
-		const std::tuple<_T ...> &arg,
+		_Fn&& fn,
+		const std::tuple<_T ...>& arg,
 		std::tuple<_Idx ...>)
 	{
 		std::forward<_Fn>(fn)(*std::get<_Idx::value>(arg) ...);
@@ -50,8 +50,8 @@ namespace bear
 
 	template<typename _Fn, typename _Tp>
 	inline void unpack_tuple_arg(
-		_Fn && fn,
-		const _Tp &arg)
+		_Fn&& fn,
+		const _Tp& arg)
 	{
 		__unpack_arg(std::forward<_Fn>(fn), arg, make_type_index<std::tuple_size<_Tp>::value>());
 	}
@@ -64,7 +64,7 @@ namespace bear
 
 
 	template<typename _T1, typename ... _T>
-	struct pack_get_type<0,_T1,_T ...>
+	struct pack_get_type<0, _T1, _T ...>
 	{
 		using type = _T1;
 	};
@@ -75,7 +75,7 @@ namespace bear
 
 
 	template<typename _T1>
-	struct __pack_get_size<_T1> :public std::integral_constant<size_t,1> {};
+	struct __pack_get_size<_T1> :public std::integral_constant<size_t, 1> {};
 
 
 	template<typename ... _T>
@@ -87,10 +87,10 @@ namespace bear
 
 
 	template<typename _T1, size_t _Sz>
-	void __pack_to_array(std::array<_T1, _Sz> & ret, size_t p) {}
+	void __pack_to_array(std::array<_T1, _Sz>& ret, size_t p) {}
 
 	template<typename _T1, size_t _Sz, typename _T2, typename ... _T>
-	void __pack_to_array(std::array<_T1,_Sz> & ret, size_t p, _T2 v1, _T ... vs)
+	void __pack_to_array(std::array<_T1, _Sz>& ret, size_t p, _T2 v1, _T ... vs)
 	{
 		ret[p] = v1;
 		__pack_to_array(ret, p + 1, vs ...);
@@ -115,7 +115,7 @@ namespace bear
 
 
 	template<typename _T>
-	struct ptr_type_at<_T,0>
+	struct ptr_type_at<_T, 0>
 	{
 		using type = _T;
 	};
@@ -124,26 +124,26 @@ namespace bear
 	struct ptr_change_elm
 	{
 		using type = _Elm;
-		static type create(const _Ptr &)
+		static type create(const _Ptr&)
 		{
 			return type();
 		}
 	};
 
 	template<typename _Oe, size_t _Sz, typename _Elm>
-	struct ptr_change_elm<std::array<_Oe,_Sz>,_Elm,true>
+	struct ptr_change_elm<std::array<_Oe, _Sz>, _Elm, true>
 	{
 		using type = std::array<
 			typename ptr_change_elm<_Oe, _Elm, true>::type, _Sz>;
 
-		static type create(const std::array<_Oe, _Sz> &)
+		static type create(const std::array<_Oe, _Sz>&)
 		{
 			return type();
 		}
 	};
 
 	template<typename _Oe, size_t _Sz, typename _Elm>
-	struct ptr_change_elm<const std::array<_Oe, _Sz>, _Elm,true>
+	struct ptr_change_elm<const std::array<_Oe, _Sz>, _Elm, true>
 	{
 		using _type = std::array<typename ptr_change_elm<_Oe,
 			typename std::remove_const<_Elm>::type, true>::type, _Sz>;
@@ -153,7 +153,7 @@ namespace bear
 			const _type,
 			_type>::type;
 
-		static type create(const std::array<_Oe, _Sz> &)
+		static type create(const std::array<_Oe, _Sz>&)
 		{
 			return type();
 		}
@@ -164,7 +164,7 @@ namespace bear
 	{
 		using type = array_ptr<typename ptr_change_elm<_Oe, _Elm, _ICD_ARR>::type>;
 
-		static auto create(const array_ptr<_Oe> & other)
+		static auto create(const array_ptr<_Oe>& other)
 		{
 			return std::vector<_Elm>(other.size());
 		}
@@ -175,7 +175,7 @@ namespace bear
 	{
 		using type = base_tensor_ptr<typename ptr_change_elm<_Bs, _Elm, _ICD_ARR>::type>;
 
-		static auto create(const base_tensor_ptr<_Bs> & other)
+		static auto create(const base_tensor_ptr<_Bs>& other)
 		{
 			return tensor<_Elm, base_tensor_ptr<_Bs>::dim>(size(other));
 		}
@@ -183,11 +183,11 @@ namespace bear
 
 
 	template<typename _Oe, size_t _Ch, typename _Elm, bool _ICD_ARR>
-	struct ptr_change_elm<image_ptr<_Oe,_Ch>, _Elm, _ICD_ARR>
+	struct ptr_change_elm<image_ptr<_Oe, _Ch>, _Elm, _ICD_ARR>
 	{
-		using type = image_ptr<typename ptr_change_elm<_Oe, _Elm, _ICD_ARR>::type,_Ch>;
+		using type = image_ptr<typename ptr_change_elm<_Oe, _Elm, _ICD_ARR>::type, _Ch>;
 
-		static type create(const image_ptr<_Oe, _Ch> & other)
+		static type create(const image_ptr<_Oe, _Ch>& other)
 		{
 			return image<_Elm, _Ch>(size(other));
 		}
@@ -227,14 +227,14 @@ namespace bear
 	};
 
 	template<typename _Ptr>
-	auto &to_base_ptr(const _Ptr &p)
+	auto& to_base_ptr(const _Ptr& p)
 	{
 		return p;
 	}
 
 	template<typename _Elm, size_t _Ch>
-	const typename image_ptr<_Elm, _Ch>::tensor_type &
-		to_base_ptr(const image_ptr<_Elm,_Ch> &p)
+	const typename image_ptr<_Elm, _Ch>::tensor_type&
+		to_base_ptr(const image_ptr<_Elm, _Ch>& p)
 	{
 		return p;
 	}
@@ -246,7 +246,7 @@ namespace bear
 		using sub_type = _Ptr;
 		using elm_type = _Ptr;
 		static constexpr size_t dim = 0;
-		static elm_type &get_elm();
+		static elm_type& get_elm();
 		using not_ptr = std::true_type;
 	};
 
@@ -279,7 +279,7 @@ namespace bear
 		using sub_type = _Elm;
 		using elm_type = typename _ptr_traits<_Elm>::elm_type;
 		static constexpr size_t dim = _ptr_traits<_Elm>::dim + 1;
-		static elm_type &get_elm();
+		static elm_type& get_elm();
 		using container_type = std::array<_Elm, _Sz>;
 		using is_ptr = std::true_type;
 	};
@@ -291,31 +291,31 @@ namespace bear
 		using sub_type = _Elm;
 		using elm_type = const typename _ptr_traits<_Elm>::elm_type;
 		static constexpr size_t dim = _ptr_traits<_Elm>::dim + 1;
-		static elm_type &get_elm();
+		static elm_type& get_elm();
 		using container_type = std::array<_Elm, _Sz>;
 		using is_ptr = std::true_type;
 	};
 
 	template<typename _Elm, size_t _Sz>
-	struct ptr_traits<std::array<_Elm, _Sz> &>
+	struct ptr_traits<std::array<_Elm, _Sz>&>
 	{
 		using type = std::array<_Elm, _Sz>;
 		using sub_type = _Elm;
 		using elm_type = typename _ptr_traits<_Elm>::elm_type;
 		static constexpr size_t dim = _ptr_traits<_Elm>::dim + 1;
-		static elm_type &get_elm();
+		static elm_type& get_elm();
 		using container_type = std::array<_Elm, _Sz>;
 		using is_ptr = std::true_type;
 	};
 
 	template<typename _Elm, size_t _Sz>
-	struct ptr_traits<const std::array<_Elm, _Sz> &>
+	struct ptr_traits<const std::array<_Elm, _Sz>&>
 	{
 		using type = std::array<_Elm, _Sz>;
 		using sub_type = _Elm;
 		using elm_type = const typename _ptr_traits<_Elm>::elm_type;
 		static constexpr size_t dim = _ptr_traits<_Elm>::dim + 1;
-		static elm_type &get_elm();
+		static elm_type& get_elm();
 		using container_type = std::array<_Elm, _Sz>;
 		using is_ptr = std::true_type;
 	};
@@ -327,7 +327,7 @@ namespace bear
 		using sub_type = _Elm;
 		using elm_type = typename _ptr_traits<_Elm>::elm_type;
 		static constexpr size_t dim = _ptr_traits<_Elm>::dim + 1;
-		static elm_type &get_elm();
+		static elm_type& get_elm();
 		using container_type = std::vector<_Elm>;
 		using is_ptr = std::true_type;
 	};
@@ -339,26 +339,26 @@ namespace bear
 		using sub_type = _Elm;
 		using elm_type = typename ptr_traits<_Elm>::elm_type;
 		static constexpr size_t dim = ptr_traits<_Elm>::dim + 1;
-		static elm_type &get_elm();
+		static elm_type& get_elm();
 		using container_type = tensor<typename base_tensor_ptr<_Elm>::elm_type, base_tensor_ptr<_Elm>::dim>;
 		using is_ptr = std::true_type;
 	};
 
 	template<typename _Elm, size_t _Ch>
-	struct ptr_traits<image_ptr<_Elm ,_Ch>>
+	struct ptr_traits<image_ptr<_Elm, _Ch>>
 	{
 		using type = image_ptr<_Elm, _Ch>;
 		using sub_type = _Elm;
 		using image_elm_type = typename image_ptr<_Elm, _Ch>::elm_type;
 		using elm_type = typename _ptr_traits<_Elm>::elm_type;
 		static constexpr size_t dim = _ptr_traits<image_elm_type>::dim + 2;
-		static elm_type &get_elm();
+		static elm_type& get_elm();
 		using container_type = image<_Elm, _Ch>;
 		using is_ptr = std::true_type;
 	};
 
 	template<typename _Cnt>
-	struct container_traits : 
+	struct container_traits :
 		public ptr_traits<typename std::decay<decltype(to_ptr(__get_t<_Cnt>()))>::type>
 	{
 	};
@@ -387,7 +387,10 @@ namespace bear
 	};
 
 	template<typename _T>
-	struct _is_true_type {};
+	struct _is_true_type
+	{
+		using not_type = std::true_type;
+	};
 
 	template<>
 	struct _is_true_type<std::true_type>
@@ -403,6 +406,39 @@ namespace bear
 		using not_ptr = std::true_type;
 		using not_container = std::true_type;
 		using not_both = std::true_type;
+
+		using if_ptr = std::false_type;
+	};
+
+	template<typename _Elm>
+	struct ptr_flag<array_ptr<_Elm>&>
+	{
+		using is_ptr = std::true_type;
+		using not_container = std::true_type;
+		using is_one = std::true_type;
+		using is_1d = std::true_type;
+
+		using if_ptr = std::true_type;
+	};
+
+	template<typename _Elm>
+	struct ptr_flag<base_tensor_ptr<_Elm>&>
+	{
+		using is_ptr = std::true_type;
+		using not_container = std::true_type;
+		using is_one = std::true_type;
+
+		using if_ptr = std::true_type;
+	};
+
+	template<typename _Elm, size_t _Ch>
+	struct ptr_flag<image_ptr<_Elm, _Ch>&>
+	{
+		using is_ptr = std::true_type;
+		using not_container = std::true_type;
+		using is_one = std::true_type;
+
+		using if_ptr = std::true_type;
 	};
 
 	template<typename _Elm>
@@ -412,6 +448,8 @@ namespace bear
 		using not_container = std::true_type;
 		using is_one = std::true_type;
 		using is_1d = std::true_type;
+
+		using if_ptr = std::true_type;
 	};
 
 	template<typename _Elm>
@@ -420,6 +458,8 @@ namespace bear
 		using is_ptr = std::true_type;
 		using not_container = std::true_type;
 		using is_one = std::true_type;
+
+		using if_ptr = std::true_type;
 	};
 
 	template<typename _Elm, size_t _Ch>
@@ -428,6 +468,19 @@ namespace bear
 		using is_ptr = std::true_type;
 		using not_container = std::true_type;
 		using is_one = std::true_type;
+
+		using if_ptr = std::true_type;
+	};
+
+	template<typename _Elm, size_t _Sz>
+	struct ptr_flag<std::array<_Elm, _Sz>&>
+	{
+		using is_ptr = std::true_type;
+		using is_container = std::true_type;
+		using is_one = std::true_type;
+		using is_1d = std::true_type;
+
+		using if_ptr = std::true_type;
 	};
 
 	template<typename _Elm, size_t _Sz>
@@ -437,6 +490,8 @@ namespace bear
 		using is_container = std::true_type;
 		using is_one = std::true_type;
 		using is_1d = std::true_type;
+
+		using if_ptr = std::false_type;
 	};
 
 	template<typename _Elm, typename _Al>
@@ -446,6 +501,8 @@ namespace bear
 		using is_container = std::true_type;
 		using is_one = std::true_type;
 		using is_1d = std::true_type;
+
+		using if_ptr = std::false_type;
 	};
 
 	template<typename _Elm, size_t _Ch>
@@ -454,6 +511,8 @@ namespace bear
 		using not_ptr = std::true_type;
 		using is_container = std::true_type;
 		using is_one = std::true_type;
+
+		using if_ptr = std::false_type;
 	};
 
 	template<typename _Elm, size_t _Sz>
@@ -462,6 +521,19 @@ namespace bear
 		using not_ptr = std::true_type;
 		using is_container = std::true_type;
 		using is_one = std::true_type;
+
+		using if_ptr = std::false_type;
 	};
 
+	template<typename _T1, typename _T2>
+	struct traits_and
+	{
+		using not_type = std::true_type;
+	};
+
+	template<>
+	struct traits_and<std::true_type, std::true_type>
+	{
+		using type = std::true_type;
+	};
 }

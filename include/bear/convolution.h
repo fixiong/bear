@@ -3,261 +3,255 @@
 #include "tensor.h"
 #include "image.h"
 #include "ptr_traits.h"
+#include "ptr_algorism.h"
 
 namespace bear
 {
-
-	template<size_t _Ks>
-	struct __ak_dsp_fnl
+	template<int _Dim>
+	struct __conv_1d
 	{
-		template<typename _Kt, size_t _Ks, typename _Th, typename ... _T>
-		static auto run(const std::array<_Kt, _Ks>& kn, _Th& ah, _T & ... arg)
+		template<typename _Dst, typename _Src>
+		static bool check_size_sub(_Dst&& dst, _Src&& src, size_t ks)
 		{
-			return __ak_dsp_fnl<_Ks - 1>(kn, arg ...) + kn[_Ks] * ah;
+			return dst.size() == src.size();
+		}
+
+		template<int _KRevDim, typename _Dst, typename _Src>
+		static bool check_size(_Dst&& dst, _Src&& src, size_t ks)
+		{
+			if (!__conv_1d<_Dim - _KRevDim>::check_size_sub(dst, src, ks)) return false;
+			return __conv_1d<_Dim - 1>::check_size<_KRevDim>(dst[0], src[0], ks);
+		}
+
+		template<typename _Src>
+		static auto step_sub(_Src src1, _Src src2)
+		{
+			return src2->begin();
+		}
+
+		template<int _KRevDim, typename _Src>
+		static ptrdiff_t step(_Src src1, _Src src2)
+		{
+			return __conv_1d<_Dim - 1>::step<_KRevDim>(src1->begin(), __conv_1d<_Dim - _KRevDim>::step_sub(src1, src2));
+		}
+
+		template<typename _Dst, typename _Src, typename _Ke, typename _Knl>
+		static void run(_Dst&& dst, _Src&& src, _Ke&& kennel, _Knl&& kf, ptrdiff_t step)
+		{
+			for (size_t i = 0; i < dst.size(); ++i)
+			{
+				__conv_1d<_Dim - 1>::run(dst[i], src[i], std::forward<_Ke>(kennel), std::forward<_Knl>(kf), step);
+			}
 		}
 	};
+
 
 	template<>
-	struct __ak_dsp_fnl<0>
+	struct __conv_1d<0>
 	{
-		template<typename _Kt, size_t _Ks, typename _T>
-		static auto run(const std::array<_Kt, _Ks>& kn, _T& arg)
+		template<typename _Dst, typename _Src>
+		static bool check_size_sub(_Dst&& dst, _Src&& src, size_t ks)
 		{
-			return kn[0] * arg;
+			return dst.size() + ks - 1 == src.size();
 		}
 
-	};
-
-	template<typename _Tt>
-	struct __apl_kernel
-	{
-		template<typename _Kt, size_t _Ks, typename _Rt, typename ... _T>
-		static void run(const std::array<_Kt, _Ks>& kn, _Rt& ret, _T & ... arg)
+		template<int _KRevDim, typename _Dst, typename _Src>
+		static bool check_size(_Dst&& dst, _Src&& src, size_t ks)
 		{
-			ret = __ak_dsp_fnl<_Ks - 1>::run(kn, arg ...);
+			return true;
 		}
-	};
 
-
-	template<typename _Tt, size_t _Sz>
-	struct __apl_kernel<std::array<_Tt, _Sz>>
-	{
-		template<typename _Kt, size_t _Ks, typename _Rt, typename _T1, typename ... _T>
-		static void run(const std::array<_Kt, _Ks>& kn, _Rt& ret, _T1& t1, _T & ... arg)
+		template<typename _Src>
+		static auto step_sub(_Src src1, _Src src2)
 		{
-			for (int i = 0; i < _Sz; ++i)
+			return src1->begin() + 1;
+		}
+
+		template<int _KRevDim, typename _Src>
+		static ptrdiff_t step(_Src src1, _Src src2)
+		{
+			auto ret = &*src2 - &*src1;
+			auto u = (ptrdiff_t) & *src2 - (ptrdiff_t) & *src1;
+
+			if (u % ret != 0)
+				throw bear_exception(exception_type::size_different, literal_u8("src memory not continue!"));
+
+			return ret;
+		}
+
+		template<typename _Dst, typename _Src, typename _Ke, typename _Knl>
+		static void run(_Dst&& dst, _Src&& _src, _Ke&& kennel, _Knl&& kf, ptrdiff_t step)
+		{
+			auto tmp = kf.zero();
+			auto src = &_src;
+
+			for (size_t j = 0; j < kennel.size(); ++j)
 			{
-				__apl_kernel<typename std::decay<decltype(*t1)>::type>::run(kn, ret[i], t1[i], arg[i] ...);
+
+				kf.mul_add(tmp, src[j * step], kennel[j]);
 			}
+
+			kf.store(dst, tmp);
 		}
 	};
 
-	template<typename _Tt>
-	struct __apl_kernel<array_ptr<_Tt>>
+	template<typename _Dst, typename _Src, typename _Ke>
+	struct conv_1d_default
 	{
-		template<typename _Kt, size_t _Ks, typename _Rt, typename _T1, typename ... _T>
-		static void run(const std::array<_Kt, _Ks>& kn, _Rt& ret, _T1& t1, _T & ... arg)
+		using tmp_t = decltype((_Src)0 * (_Ke)0 + (_Src)0 * (_Ke)0);
+
+		static tmp_t zero()
 		{
-			for (int i = 0; i < ret.size(); ++i)
-			{
-				__apl_kernel<typename std::decay<decltype(*t1)>::type>::run(kn, ret[i], t1[i], arg[i] ...);
-			}
+			return 0;
 		}
-	};
 
-	template<typename _Base>
-	struct __apl_kernel<base_tensor_ptr<_Base>>
-	{
-		template<typename _Kt, size_t _Ks, typename _Rt, typename _T1, typename ... _T>
-		static void run(const std::array<_Kt, _Ks>& kn, _Rt& ret, _T1& t1, _T & ... arg)
+		static void mul_add(tmp_t& tmp, const _Src& m1, const _Ke& m2)
 		{
-			for (int i = 0; i < ret.size(); ++i)
-			{
-				__apl_kernel<typename std::decay<decltype(*t1)>::type>::run(kn, ret[i], t1[i], arg[i] ...);
-			}
+			tmp += m1 * m2;
 		}
-	};
 
-
-	template<
-		size_t _Dim,
-		size_t _Str>
-		struct __conv_1d
-	{
-		template<
-			typename _Dst,
-			typename _Src,
-			typename _Knl,
-			typename _Saver
-		>
-			static void run(
-				const _Dst& dst,
-				const _Src& src,
-				const _Knl& kn,
-				ptrdiff_t ofs,
-				_Saver&& sv)
+		static void store(_Dst& dst, const tmp_t& tmp)
 		{
-			auto de = dst.end();
-			auto di = dst.begin();
-			auto si = src.begin();
-			for (; di < de; ++di, ++si)
-			{
-				__conv_1d<_Dim - 1, _Str>::
-					run(*di, *si, kn, ofs, std::forward<_Saver>(sv));
-			}
+			dst = tmp;
 		}
 	};
 
-
-	template<typename _Fn, typename _Kt, typename _Rt, typename _Iter, typename ... _Idx>
-	inline void _unpack_iterator(
-		_Fn&& fn,
-		const _Kt& kn,
-		_Rt& ret,
-		const _Iter& iter,
-		std::tuple<_Idx ...>)
+	template<unsigned int _Dim, typename _Dst, typename _Src, typename _Ke, typename _Knl>
+	inline void conv_1d(_Dst&& _dst, _Src&& _src, _Ke&& kennel, _Knl&& kn)
 	{
-		std::forward<_Fn>(fn)(kn, ret, iter + _Idx::value ...);
+		auto dst = to_ptr(_dst);
+		auto src = to_ptr(_src);
+
+		using dst_t = decltype(dst);
+		using src_t = decltype(src);
+
+		static_assert(ptr_traits<src_t>::dim <= ptr_traits<dst_t>::dim, "src dim must less or eq than dst!");
+		static_assert(ptr_traits<src_t>::dim > _Dim, "src dim must great than conv dim!");
+
+		using cc = __conv_1d <ptr_traits<src_t>::dim>;
+
+		if (!cc::check_size<ptr_traits<src_t>::dim - _Dim>(dst, src, kennel.size()))
+			throw bear_exception(exception_type::size_different, literal_u8("wrong dst size!"));
+
+		auto step = cc::step<ptr_traits<src_t>::dim - _Dim>(&src, &src);
+
+		cc::run(dst, src, std::forward<_Ke>(kennel), std::forward<_Knl>(kn), step);
 	}
 
-	template<size_t _Str>
-	struct __conv_1d<0, _Str>
+
+
+	template<unsigned int _Dim, typename _Dst, typename _Src, typename _Ke>
+	inline void conv_1d(_Dst&& _dst, _Src&& _src, _Ke&& kennel)
 	{
-		template<
-			typename _Dst,
-			typename _Src,
-			typename _Kelm,
-			size_t _Ksz,
-			typename _Saver>
-			static void run(
-				const _Dst& dst,
-				const _Src& src,
-				const std::array<_Kelm, _Ksz>& kn,
-				ptrdiff_t ofs,
-				_Saver&& sv)
+		auto dst = to_ptr(_dst);
+		auto src = to_ptr(_src);
+
+		using dst_elm = typename ptr_traits<decltype(dst)>::elm_type;
+		using src_elm = typename ptr_traits<decltype(src)>::elm_type;
+		using kel_elm = typename std::decay<decltype(kennel[0])>::type;
+
+		using Knl = conv_1d_default<dst_elm, src_elm, kel_elm>;
+
+		conv_1d(dst, src, std::forward<_Ke>(kennel), Knl());
+	}
+
+	template<size_t input_bits, int ofs = 0>
+	struct conv_1d_int16
+	{
+		static int zero()
 		{
-			using src_type = typename std::decay<decltype(src[0])>::type;
-			using tmp_type = typename __get_tmp_type<src_type, _Kelm>::type;
-			using tmp_ctn = typename __get_tmp_ctn<tmp_type>::type;
+			return 0;
+		}
 
-			tmp_ctn tc = __get_tmp_ctn<tmp_type>::make(dst[0]);
+		static void mul_add(int& tmp, int m1, int m2)
+		{
+			tmp += m1 * m2;
+		}
 
+		static int store_inner(int tmp)
+		{
+			return ((tmp + (1 << (input_bits - 1))) >> input_bits) + ofs;
+		}
 
-			auto di = dst.begin();
-			auto dend = dst.end();
+		static void store(unsigned char& dst, int tmp)
+		{
+			int ret = store_inner(tmp);
 
-			auto si = src.begin() + ofs;
-			auto send0 = src.begin();
-			auto send1 = src.end() + 1 - _Ksz;
-
-			for (; si < send0 && di < dend; ++di, si += _Str)
+			if ((unsigned int)ret > 0xff)
 			{
-
+				if (ret > 0xff) ret = 0xff;
+				else ret = 00;
 			}
 
-			for (; si < send1 && di < dend; ++di, si += _Str)
+			dst = (unsigned char)ret;
+		}
+
+		static void store(char& dst, int tmp)
+		{
+			int ret = store_inner(tmp);
+
+			int rp = ret + 0x80;
+
+			if ((unsigned int)rp > 0xff)
 			{
-				_unpack_iterator(
-					__apl_kernel<src_type>::run,
-					kn, tc, si, make_type_index<_Ksz>);
+				if (rp > 0xff) ret = 0x7f;
+				else ret = 0xffffff80;
 			}
 
-			for (; di < dend; ++di, si += _Str)
-			{
+			dst = (char)ret;
+		}
 
+		static void store(short& dst, int tmp)
+		{
+			int ret = store_inner(tmp);
+
+			int rp = ret + 0x8000;
+
+			if ((unsigned int)rp > 0xffff)
+			{
+				if (rp > 0xffff) ret = 0x7fff;
+				else ret = 0xffff8000;
 			}
 
+			dst = (short)ret;
 		}
-	};
 
-
-
-
-	template<typename _S, typename _K>
-	struct __get_tmp_type
-	{
-		using type = decltype(__get_t<_S>()* __get_t<_K>() + __get_t<_S>() * __get_t<_K>());
-	};
-
-	template<typename _Elm, size_t _Sz, typename _K>
-	struct __get_tmp_type<std::array<_Elm, _Sz>, _K>
-	{
-		using type = std::array<typename __get_tmp_type<_Elm, _K>::type, _Sz>;
-	};
-
-	template<typename _Base, typename _K>
-	struct __get_tmp_type<array_ptr<_Base>, _K>
-	{
-		using type = array_ptr<typename __get_tmp_type<_Base, _K>::type>;
-	};
-
-
-	template<typename _Base, typename _K>
-	struct __get_tmp_type<base_tensor_ptr<_Base>, _K>
-	{
-		using type = base_tensor_ptr<typename __get_tmp_type<_Base, _K>::type>;
-	};
-
-	template<typename _P>
-	struct __get_tmp_ctn
-	{
-		using type = _P;
-
-		template<typename _T>
-		static type make(const _T&)
+		static void store(int& dst, int tmp)
 		{
-			return type();
+			dst = store_inner(tmp);
 		}
 	};
 
-	template<typename _P, size_t _S>
-	struct __get_tmp_ctn<std::array<_P, _S>>
+	template<unsigned int _Dim, typename _Dst, typename _Src>
+	inline void conv_1d_pad(_Dst&& _dst, _Src&& _src, size_t left, size_t right)
 	{
-		using type = std::array<_P, _S>;
+		auto dst = to_base_ptr(to_ptr(_dst));
+		auto src = to_base_ptr(to_ptr(_src));
 
-		template<typename _T>
-		static type make(const _T&)
+		auto right_b = size_at<_Dim>(dst) - right;
+		auto dst_c = clip_at<_Dim>(dst, left, right_b);
+
+		if (dst_c.data() != src.data())
 		{
-			return type();
+			copy(dst_c, src);
 		}
-	};
-
-	template<typename _Elm>
-	struct __get_tmp_ctn<array_ptr<_Elm>>
-	{
-		using type = std::vector<_Elm>;
-
-		template<typename _T>
-		static type make(const _T& dst)
+		else if (!is_same_size(dst_c, src))
 		{
-			return type(size(dst));
+			throw bear_exception(exception_type::size_different, "wrong dst size!");
 		}
-	};
 
-	template<typename _Elm>
-	struct __get_tmp_ctn<base_tensor_ptr<_Elm>>
-	{
-		using type = tensor<typename base_tensor_ptr<_Elm>::elm_type, base_tensor_ptr<_Elm>::dim>;
+		auto left_p = clip_at<_Dim>(dst, left, left + 1);
 
-		template<typename _T>
-		static type make(const _T& dst)
+		for (size_t i = 0; i < left; ++i)
 		{
-			return type(size(dst));
+			copy(clip_at<_Dim>(dst, i, i + 1), left_p);
 		}
-	};
 
+		auto right_p = clip_at<_Dim>(dst, right_b - 1, right_b);
 
-
-	template<unsigned int _Dim, typename _Ke, typename _Knl, typename _Cnt>
-	inline auto __conv_1d(_Cnt&& ts, _Knl kn = _Knl())
-	{
-		auto src = to_base_ptr(to_ptr(ts));
-		auto dst_ctn = make_container(src);
-		resize_at<_Dim>(dst_ctn, kn.result_size());
-		using tmp_ptr = typename ptr_type_at<decltype(src), _Dim>::type;
-		using src_elm_type = typename ptr_get_elm<tmp_ptr>::type;
-
-		__conv_1d<_Dim>::run(to_ptr(dst_ctn), src);
-		return dst_ctn;
+		for (size_t i = 0; i < right; ++i)
+		{
+			copy(clip_at<_Dim>(dst, right_b + i, right_b + i + 1), right_p);
+		}
 	}
 }

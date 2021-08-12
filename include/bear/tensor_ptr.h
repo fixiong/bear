@@ -8,21 +8,21 @@ namespace bear
 {
 
 	template<size_t _Sz>
-	inline tensor_size<_Sz - 1> &sub_size(tensor_size<_Sz> &sz)
+	inline tensor_size<_Sz - 1>& sub_size(tensor_size<_Sz>& sz)
 	{
 		static_assert(_Sz > 1, "size too small!");
-		return *(tensor_size<_Sz - 1> *)&sz[1];
+		return *(tensor_size<_Sz - 1> *) & sz[1];
 	}
 
 	template<size_t _Sz>
-	inline const tensor_size<_Sz - 1> &sub_size(const tensor_size<_Sz> &sz)
+	inline const tensor_size<_Sz - 1>& sub_size(const tensor_size<_Sz>& sz)
 	{
 		static_assert(_Sz > 1, "size too small!");
-		return *(tensor_size<_Sz - 1> *)&sz[1];
+		return *(tensor_size<_Sz - 1> *) & sz[1];
 	}
 
 	template<size_t _Sz>
-	inline size_t total_size(const tensor_size<_Sz> &sz)
+	inline size_t total_size(const tensor_size<_Sz>& sz)
 	{
 		size_t ret = sz[0];
 
@@ -35,7 +35,7 @@ namespace bear
 	}
 
 	template<size_t _Sz>
-	inline bool operator == (const tensor_size<_Sz> &ls, const tensor_size<_Sz> &rs)
+	inline bool operator == (const tensor_size<_Sz>& ls, const tensor_size<_Sz>& rs)
 	{
 		for (int i = 0; i < _Sz; ++i)
 		{
@@ -45,7 +45,7 @@ namespace bear
 	}
 
 	template<size_t _Sz>
-	inline bool operator != (const tensor_size<_Sz> &ls, const tensor_size<_Sz> &rs)
+	inline bool operator != (const tensor_size<_Sz>& ls, const tensor_size<_Sz>& rs)
 	{
 		for (int i = 0; i < _Sz; ++i)
 		{
@@ -54,13 +54,13 @@ namespace bear
 		return false;
 	}
 
-	inline void __pack_tensor_size(tensor_size<1> &pk, size_t sz)
+	inline void __pack_tensor_size(tensor_size<1>& pk, size_t sz)
 	{
 		pk[0] = sz;
 	}
 
 	template<typename ... _T, size_t _Dim>
-	inline void __pack_tensor_size(tensor_size<_Dim> &pk, size_t sz, _T ... sizes)
+	inline void __pack_tensor_size(tensor_size<_Dim>& pk, size_t sz, _T ... sizes)
 	{
 		pk[0] = sz;
 		__pack_tensor_size(sub_size(pk), sizes ...);
@@ -84,7 +84,7 @@ namespace bear
 		using const_self = base_tensor_ptr<typename value_type::const_self>;
 
 		using elm_type = typename value_type::elm_type;
-		using elm_pointer = elm_type * ;
+		using elm_pointer = elm_type*;
 
 		using array_type = typename value_type::array_type;
 
@@ -111,7 +111,7 @@ namespace bear
 	public:
 
 		base_tensor_ptr() = default;
-		base_tensor_ptr(const base_tensor_ptr &oth) = default;
+		base_tensor_ptr(const base_tensor_ptr& oth) = default;
 
 		template<typename ... _T>
 		base_tensor_ptr(elm_pointer _elm, size_t _sz, _T ... _sizes) :
@@ -122,16 +122,16 @@ namespace bear
 			_pointer(value_type(_elm, sub_size(_size))),
 			_size(_size[0]) {}
 
-		base_tensor_ptr(const value_type &base, size_t size) :
+		base_tensor_ptr(const value_type& base, size_t size) :
 			_pointer(base),
 			_size(size) {}
 
-		base_tensor_ptr(const value_type &base, size_t size, difference_type _step) :
+		base_tensor_ptr(const value_type& base, size_t size, difference_type _step) :
 			_pointer(base, _step),
-			_size(size){}
+			_size(size) {}
 
 		template<typename _Oe_>
-		base_tensor_ptr(const base_tensor_ptr<_Oe_> &oth) :
+		base_tensor_ptr(const base_tensor_ptr<_Oe_>& oth) :
 			_pointer(oth.begin()),
 			_size(oth.size())
 		{
@@ -156,7 +156,7 @@ namespace bear
 		}
 
 
-		const iterator &begin() const
+		const iterator& begin() const
 		{
 			return _pointer;
 		}
@@ -189,7 +189,7 @@ namespace bear
 			return at(i);
 		}
 
-		const value_type &front() const
+		const value_type& front() const
 		{
 			return *_pointer;
 		}
@@ -227,7 +227,7 @@ namespace bear
 		}
 
 		template<typename _Fn>
-		void for_each(_Fn && _fn) const
+		void for_each(_Fn&& _fn) const
 		{
 			auto ary = plan();
 			if (!ary.empty())
@@ -244,10 +244,10 @@ namespace bear
 
 		void fill(elm_type _value) const
 		{
-			for_each([_value](elm_type &v)
-			{
-				v = _value;
-			});
+			for_each([_value](elm_type& v)
+				{
+					v = _value;
+				});
 		}
 
 		inline auto clip(size_t start, size_t end) const
@@ -255,7 +255,7 @@ namespace bear
 #ifdef _BEAR_BORDER_CHECK
 			assert(end <= size() && start <= end);
 #endif
-			return base_tensor_ptr(at(start), end - start);
+			return base_tensor_ptr(at(start), end - start, _pointer.move_step());
 		}
 
 		template<typename ... _T>
@@ -270,7 +270,7 @@ namespace bear
 		}
 
 		template<typename _Oe>
-		inline void copy(const base_tensor_ptr<_Oe> &oth) const
+		inline void copy(const base_tensor_ptr<_Oe>& oth) const
 		{
 			if (size() != oth.size())
 				__on_bear_exception(
@@ -314,21 +314,21 @@ namespace bear
 	struct _tensor_clip_at<0>
 	{
 		template<typename _T>
-		static auto _run(const _T & _oth, size_t _start, size_t _end)
+		static auto _run(const _T& _oth, size_t _start, size_t _end)
 		{
 			return _oth.clip(_start, _end);
 		}
 	};
 
 	template<size_t _Dim, typename _T>
-	inline auto clip_at(_T & _oth, size_t _start, size_t _end)
+	inline auto clip_at(_T& _oth, size_t _start, size_t _end)
 	{
 		return _tensor_clip_at<_Dim>::_run(to_ptr(_oth), _start, _end);
 	}
 
 
 	template<size_t _Dim, typename _T>
-	inline auto clip_at(const _T & _oth, size_t _start, size_t _end)
+	inline auto clip_at(const _T& _oth, size_t _start, size_t _end)
 	{
 		return _tensor_clip_at<_Dim>::_run(to_ptr(_oth), _start, _end);
 	}
@@ -337,20 +337,20 @@ namespace bear
 
 
 	template<typename _Elm>
-	static void __get_size_array(tensor_size<1> & sz, const array_ptr<_Elm> & t)
+	static void __get_size_array(tensor_size<1>& sz, const array_ptr<_Elm>& t)
 	{
 		sz[0] = t.size();
 	}
 
 	template<typename _Base, size_t _D>
-	static void __get_size_array(tensor_size<_D> & sz, const base_tensor_ptr<_Base> & t)
+	static void __get_size_array(tensor_size<_D>& sz, const base_tensor_ptr<_Base>& t)
 	{
 		sz[0] = t.size();
 		__get_size_array(sub_size(sz), t.front());
 	}
 
 	template<typename _Base>
-	inline tensor_size<base_tensor_ptr<_Base>::dim> size(const base_tensor_ptr<_Base> & t)
+	inline tensor_size<base_tensor_ptr<_Base>::dim> size(const base_tensor_ptr<_Base>& t)
 	{
 		tensor_size<base_tensor_ptr<_Base>::dim> ret;
 
@@ -361,31 +361,31 @@ namespace bear
 
 
 	template<typename _Elm>
-	inline auto make_tensor_ptr(_Elm * _start, size_t _size)
+	inline auto make_tensor_ptr(_Elm* _start, size_t _size)
 	{
 		return array_ptr<_Elm>(_start, _size);
 	}
 
 	template<typename _T>
-	inline auto make_tensor_ptr(const array_ptr<_T> & oth, size_t _size)
+	inline auto make_tensor_ptr(const array_ptr<_T>& oth, size_t _size)
 	{
 		return base_tensor_ptr<array_ptr<_T>>(oth, _size);
 	}
 
 	template<typename _T>
-	inline auto make_tensor_ptr(const base_tensor_ptr<_T> & oth, size_t _size)
+	inline auto make_tensor_ptr(const base_tensor_ptr<_T>& oth, size_t _size)
 	{
 		return base_tensor_ptr<base_tensor_ptr<_T>>(oth, _size);
 	}
 
 	template<typename _T>
-	inline auto make_tensor_ptr(const array_ptr<_T> & oth, size_t _size, size_t _step)
+	inline auto make_tensor_ptr(const array_ptr<_T>& oth, size_t _size, size_t _step)
 	{
 		return base_tensor_ptr<array_ptr<_T>>(oth, _size, _step);
 	}
 
 	template<typename _T>
-	inline auto make_tensor_ptr(const base_tensor_ptr<_T> & oth, size_t _size, size_t _step)
+	inline auto make_tensor_ptr(const base_tensor_ptr<_T>& oth, size_t _size, size_t _step)
 	{
 		return base_tensor_ptr<base_tensor_ptr<_T>>(oth, _size, _step);
 	}
@@ -393,66 +393,66 @@ namespace bear
 
 	template<typename _T1>
 	inline bool is_plan(
-		const _T1 &t1)
+		const _T1& t1)
 	{
 		return t1.is_plan();
 	}
 
 	template<typename _T1, typename ... _Ts>
 	bool is_plan(
-		const _T1 &t1,
+		const _T1& t1,
 		const _Ts & ... ts)
 	{
 		return t1.is_plan() && is_plan(ts ...);
 	}
 
 	template<typename _Elm>
-	inline auto __enlage(const array_ptr<_Elm> &oth, size_t sz, size_t up_step)
+	inline auto __enlage(const array_ptr<_Elm>& oth, size_t sz, size_t up_step)
 	{
 
-//#ifdef _BEAR_BORDER_CHECK
-//		assert(up_step == oth.size() * oth.move_step());
-//#endif // _BEAR_BORDER_CHECK
+		//#ifdef _BEAR_BORDER_CHECK
+		//		assert(up_step == oth.size() * oth.move_step());
+		//#endif // _BEAR_BORDER_CHECK
 
 		return array_ptr<_Elm>(oth.data(), sz * oth.size());
 	}
 
 	template<typename _Elm>
-	inline auto __enlage(const base_tensor_ptr<_Elm> &oth, size_t sz, size_t up_step)
+	inline auto __enlage(const base_tensor_ptr<_Elm>& oth, size_t sz, size_t up_step)
 	{
 		if (up_step == oth.size() * oth.move_step())
 		{
 			return base_tensor_ptr<_Elm>(oth.front(), sz * oth.size(), oth.move_step());
 		}
 
-//#ifdef _BEAR_BORDER_CHECK
-//		assert(1 == oth.size());
-//#endif // _BEAR_BORDER_CHECK
+		//#ifdef _BEAR_BORDER_CHECK
+		//		assert(1 == oth.size());
+		//#endif // _BEAR_BORDER_CHECK
 
 		return base_tensor_ptr<_Elm>(oth.front(), sz, up_step);
 	}
 
 
 	template<typename _Elm>
-	inline auto __ensmall(const array_ptr<_Elm> &oth, size_t sz)
+	inline auto __ensmall(const array_ptr<_Elm>& oth, size_t sz)
 	{
 		return array_ptr<_Elm>(oth.data(), oth.size() / sz);
 	}
 
 	template<typename _Elm>
-	inline auto __ensmall(const base_tensor_ptr<_Elm> &oth, size_t sz)
+	inline auto __ensmall(const base_tensor_ptr<_Elm>& oth, size_t sz)
 	{
 		return base_tensor_ptr<_Elm>(oth.front(), oth.size() / sz, oth.move_step());
 	}
 
 	template<typename _Elm>
-	inline array_ptr<_Elm> _shrink(const array_ptr<_Elm> &oth)
+	inline array_ptr<_Elm> _shrink(const array_ptr<_Elm>& oth)
 	{
 		return oth;
 	}
 
 	template<typename _Elm>
-	inline base_tensor_ptr<_Elm> _shrink(const base_tensor_ptr<_Elm> &oth)
+	inline base_tensor_ptr<_Elm> _shrink(const base_tensor_ptr<_Elm>& oth)
 	{
 		if (oth.move_step() == oth.front().move_step() * oth.front().size())
 		{
@@ -472,7 +472,7 @@ namespace bear
 	}
 
 	template<typename _Elm>
-	inline base_tensor_ptr<_Elm> shrink(const base_tensor_ptr<_Elm> &oth)
+	inline base_tensor_ptr<_Elm> shrink(const base_tensor_ptr<_Elm>& oth)
 	{
 		if (oth.is_plan())
 		{
@@ -484,33 +484,33 @@ namespace bear
 			return base_tensor_ptr<_Elm>(
 				oth.data(),
 				sizes
-			);
+				);
 		}
 
 		return _shrink(oth);
 	}
 
 	template<typename _Elm>
-	inline const array_ptr<_Elm> &_reshape(const array_ptr<_Elm> &oth, const tensor_size<1> &sizes)
+	inline const array_ptr<_Elm>& _reshape(const array_ptr<_Elm>& oth, const tensor_size<1>& sizes)
 	{
 		return oth;
 	}
 
 	template<typename _Elm, size_t _Dim>
-	inline tensor_ptr<_Elm, _Dim> _reshape(const array_ptr<_Elm> &oth, const tensor_size<_Dim> &sizes)
+	inline tensor_ptr<_Elm, _Dim> _reshape(const array_ptr<_Elm>& oth, const tensor_size<_Dim>& sizes)
 	{
 		return tensor_ptr<_Elm, _Dim>(oth.data(), sizes);
 	}
 
 	template<typename _Elm>
-	inline array_ptr<_Elm> _reshape(const base_tensor_ptr<_Elm> &oth, const tensor_size<1> &sizes)
+	inline array_ptr<_Elm> _reshape(const base_tensor_ptr<_Elm>& oth, const tensor_size<1>& sizes)
 	{
 		return oth.plan();
 	}
 
 
 	template<typename _Elm>
-	inline auto _reshape(const base_tensor_ptr<_Elm> &oth, const tensor_size<2> &sizes)
+	inline auto _reshape(const base_tensor_ptr<_Elm>& oth, const tensor_size<2>& sizes)
 	{
 		using return_type = base_tensor_ptr<array_ptr<typename base_tensor_ptr<_Elm>::elm_type>>;
 
@@ -538,7 +538,7 @@ namespace bear
 	}
 
 	template<typename _Elm, size_t _Dim>
-	inline auto _reshape(const base_tensor_ptr<_Elm> &oth, const tensor_size<_Dim> &sizes)
+	inline auto _reshape(const base_tensor_ptr<_Elm>& oth, const tensor_size<_Dim>& sizes)
 	{
 		using return_type = tensor_ptr<typename base_tensor_ptr<_Elm>::elm_type, _Dim>;
 
@@ -560,13 +560,13 @@ namespace bear
 		if (oth.size() % sizes[0])return return_type();
 
 		return return_type(
-			_reshape(__ensmall(oth,sizes[0]), sub_size(sizes)),
+			_reshape(__ensmall(oth, sizes[0]), sub_size(sizes)),
 			sizes[0],
 			oth.move_step() * oth.size() / sizes[0]);
 	}
 
 	template<typename _T, size_t _Dim>
-	inline auto reshape(_T &&_oth, const tensor_size<_Dim> &sizes)
+	inline auto reshape(_T&& _oth, const tensor_size<_Dim>& sizes)
 	{
 		auto oth = to_ptr(_oth);
 		if (oth.total_size() != total_size(sizes))
@@ -581,7 +581,7 @@ namespace bear
 	}
 
 	template<typename _T, typename ... _Sz>
-	inline auto reshape(_T &&oth, size_t sz, _Sz ... _sizes)
+	inline auto reshape(_T&& oth, size_t sz, _Sz ... _sizes)
 	{
 		auto sizes = make_tensor_size(sz, _sizes ...);
 		return reshape(oth, sizes);
@@ -590,7 +590,7 @@ namespace bear
 
 
 	template<typename _Stm, typename _Elm>
-	inline _Stm && operator << (_Stm && stm, const base_tensor_ptr<_Elm> &arr)
+	inline _Stm&& operator << (_Stm&& stm, const base_tensor_ptr<_Elm>& arr)
 	{
 		std::forward<_Stm>(stm) << '{' << arr[0];
 		auto e = arr.end();
