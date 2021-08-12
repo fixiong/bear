@@ -16,11 +16,11 @@ namespace bear
 			return dst.size() == src.size();
 		}
 
-		template<int _KRevDim, typename _Dst, typename _Src>
-		static bool check_size(_Dst&& dst, _Src&& src, size_t ks)
+		template<typename _Dst, typename _Src, int _KRevDim>
+		static bool check_size(_Dst&& dst, _Src&& src, size_t ks, std::integral_constant<int, _KRevDim> krev)
 		{
 			if (!__conv_1d<_Dim - _KRevDim>::check_size_sub(dst, src, ks)) return false;
-			return __conv_1d<_Dim - 1>::check_size<_KRevDim>(dst[0], src[0], ks);
+			return __conv_1d<_Dim - 1>::check_size(dst[0], src[0], ks, krev);
 		}
 
 		template<typename _Src>
@@ -29,10 +29,10 @@ namespace bear
 			return src2->begin();
 		}
 
-		template<int _KRevDim, typename _Src>
-		static ptrdiff_t step(_Src src1, _Src src2)
+		template<typename _Src, int _KRevDim>
+		static ptrdiff_t step(_Src src1, _Src src2, std::integral_constant<int, _KRevDim> krev)
 		{
-			return __conv_1d<_Dim - 1>::step<_KRevDim>(src1->begin(), __conv_1d<_Dim - _KRevDim>::step_sub(src1, src2));
+			return __conv_1d<_Dim - 1>::step(src1->begin(), __conv_1d<_Dim - _KRevDim>::step_sub(src1, src2), krev);
 		}
 
 		template<typename _Dst, typename _Src, typename _Ke, typename _Knl>
@@ -55,8 +55,8 @@ namespace bear
 			return dst.size() + ks - 1 == src.size();
 		}
 
-		template<int _KRevDim, typename _Dst, typename _Src>
-		static bool check_size(_Dst&& dst, _Src&& src, size_t ks)
+		template<typename _Dst, typename _Src, typename _Any>
+		static bool check_size(_Dst&& dst, _Src&& src, size_t ks, _Any)
 		{
 			return true;
 		}
@@ -67,8 +67,8 @@ namespace bear
 			return src1->begin() + 1;
 		}
 
-		template<int _KRevDim, typename _Src>
-		static ptrdiff_t step(_Src src1, _Src src2)
+		template<typename _Src, typename _Any>
+		static ptrdiff_t step(_Src src1, _Src src2, _Any)
 		{
 			auto ret = &*src2 - &*src1;
 			auto u = (ptrdiff_t) & *src2 - (ptrdiff_t) & *src1;
@@ -130,10 +130,10 @@ namespace bear
 
 		using cc = __conv_1d <ptr_traits<src_t>::dim>;
 
-		if (!cc::check_size<ptr_traits<src_t>::dim - _Dim>(dst, src, kennel.size()))
-			throw bear_exception(exception_type::size_different, literal_u8("wrong dst size!"));
+		auto ok = cc::check_size(dst, src, kennel.size(), std::integral_constant<int, ptr_traits<src_t>::dim - _Dim>());
+		if (!ok) throw bear_exception(exception_type::size_different, literal_u8("wrong dst size!"));
 
-		auto step = cc::step<ptr_traits<src_t>::dim - _Dim>(&src, &src);
+		auto step = cc::step(&src, &src, std::integral_constant<int, ptr_traits<src_t>::dim - _Dim>());
 
 		cc::run(dst, src, std::forward<_Ke>(kennel), std::forward<_Knl>(kn), step);
 	}
