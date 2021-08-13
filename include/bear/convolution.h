@@ -10,6 +10,19 @@ namespace bear
 	template<int _Dim>
 	struct __conv_1d
 	{
+		static size_t clip_to_sub(size_t pad)
+		{
+			return 0;
+		}
+
+		template<typename _Dst, typename _Src, int _KDim>
+		static auto clip_to(_Dst dst, _Src src, size_t pad, std::integral_constant<int, _KDim> krev)
+		{
+			dst = clip_at<_Dim - 1>(dst, 0, size_at<_Dim - 1>(src) + __conv_1d<_Dim - 1 - _KDim>::clip_to_sub(pad));
+			return __conv_1d<_Dim - 1>::clip_to(dst, src, pad, krev);
+		}
+
+
 		template<typename _Dst, typename _Src>
 		static bool check_size_sub(_Dst&& dst, _Src&& src, size_t ks)
 		{
@@ -38,9 +51,11 @@ namespace bear
 		template<typename _Dst, typename _Src, typename _Ke, typename _Knl>
 		static void run(_Dst&& dst, _Src&& src, _Ke&& kennel, _Knl&& kf, ptrdiff_t step)
 		{
-			for (size_t i = 0; i < dst.size(); ++i)
+			auto end = dst.end();
+			auto src_p = src.begin();
+			for (auto dst_p = dst.begin(); dst_p != end; ++dst_p, ++src_p)
 			{
-				__conv_1d<_Dim - 1>::run(dst[i], src[i], std::forward<_Ke>(kennel), std::forward<_Knl>(kf), step);
+				__conv_1d<_Dim - 1>::run(*dst_p, *src_p, std::forward<_Ke>(kennel), std::forward<_Knl>(kf), step);
 			}
 		}
 	};
@@ -49,6 +64,17 @@ namespace bear
 	template<>
 	struct __conv_1d<0>
 	{
+		static size_t clip_to_sub(size_t pad)
+		{
+			return pad;
+		}
+
+		template<typename _Dst, typename _Src, int _KDim>
+		static auto clip_to(_Dst dst, _Src src, size_t pad, std::integral_constant<int, _KDim> krev)
+		{
+			return dst;
+		}
+
 		template<typename _Dst, typename _Src>
 		static bool check_size_sub(_Dst&& dst, _Src&& src, size_t ks)
 		{
@@ -70,25 +96,20 @@ namespace bear
 		template<typename _Src, typename _Any>
 		static ptrdiff_t step(_Src src1, _Src src2, _Any)
 		{
-			auto ret = &*src2 - &*src1;
-			auto u = (ptrdiff_t) & *src2 - (ptrdiff_t) & *src1;
-
-			if (u % ret != 0)
-				throw bear_exception(exception_type::size_different, literal_u8("src memory not continue!"));
-
-			return ret;
+			return (ptrdiff_t) & *src2 - (ptrdiff_t) & *src1;
 		}
 
 		template<typename _Dst, typename _Src, typename _Ke, typename _Knl>
-		static void run(_Dst&& dst, _Src&& _src, _Ke&& kennel, _Knl&& kf, ptrdiff_t step)
+		static void run(_Dst& dst, _Src& _src, _Ke&& kennel, _Knl&& kf, ptrdiff_t step)
 		{
 			auto tmp = kf.zero();
-			auto src = &_src;
 
-			for (size_t j = 0; j < kennel.size(); ++j)
+			char* src = (char*)&_src;
+			auto end = kennel.end();
+			for (auto kennel_p = kennel.begin(); kennel_p != end; ++kennel_p, src += step)
 			{
 
-				kf.mul_add(tmp, src[j * step], kennel[j]);
+				kf.mul_add(tmp, *((_Src*)src), *kennel_p);
 			}
 
 			kf.store(dst, tmp);
@@ -116,6 +137,44 @@ namespace bear
 		}
 	};
 
+	template<unsigned int _Dim, typename _Dst, typename _Src>
+	inline auto conv_1d_pad(_Dst&& _dst, _Src&& _src, size_t left, size_t right)
+	{
+		auto dst = to_base_ptr(to_ptr(_dst));
+		auto src = to_base_ptr(to_ptr(_src));
+
+		dst = __conv_1d<decltype(dst)::dim>::clip_to(
+			dst, src, left + right, std::integral_constant<int, _Dim>());
+
+		auto right_b = size_at<_Dim>(dst) - right;
+		auto dst_c = clip_at<_Dim>(dst, left, right_b);
+
+		if (dst_c.data() != src.data())
+		{
+			copy(dst_c, src);
+		}
+		else if (!is_same_size(dst_c, src))
+		{
+			throw bear_exception(exception_type::size_different, "wrong dst size!");
+		}
+
+		auto left_p = clip_at<_Dim>(dst, left, left + 1);
+
+		for (size_t i = 0; i < left; ++i)
+		{
+			copy(clip_at<_Dim>(dst, i, i + 1), left_p);
+		}
+
+		auto right_p = clip_at<_Dim>(dst, right_b - 1, right_b);
+
+		for (size_t i = 0; i < right; ++i)
+		{
+			copy(clip_at<_Dim>(dst, right_b + i, right_b + i + 1), right_p);
+		}
+
+		return dst;
+	}
+
 	template<unsigned int _Dim, typename _Dst, typename _Src, typename _Ke, typename _Knl>
 	inline void conv_1d(_Dst&& _dst, _Src&& _src, _Ke&& kennel, _Knl&& kn)
 	{
@@ -139,6 +198,23 @@ namespace bear
 	}
 
 
+	template<unsigned int _Dim, typename _Dst, typename _Tmp, typename _Src, typename _Ke, typename _Knl>
+	inline void conv_1d(_Dst&& _dst,
+		_Tmp&& _tmp, _Src&& _src, size_t left_pad, size_t right_pad,
+		_Ke&& kennel, _Knl&& kn)
+	{
+		auto tmp = conv_1d_pad<_Dim>(
+			std::forward<_Tmp>(_tmp),
+			std::forward<_Src>(_src),
+			left_pad,
+			right_pad);
+
+		conv_1d<_Dim>(
+			std::forward<_Dst>(_dst),
+			tmp,
+			std::forward<_Ke>(kennel),
+			std::forward<_Knl>(kn));
+	}
 
 	template<unsigned int _Dim, typename _Dst, typename _Src, typename _Ke>
 	inline void conv_1d(_Dst&& _dst, _Src&& _src, _Ke&& kennel)
@@ -180,7 +256,7 @@ namespace bear
 			if ((unsigned int)ret > 0xff)
 			{
 				if (ret > 0xff) ret = 0xff;
-				else ret = 00;
+				else ret = 0;
 			}
 
 			dst = (unsigned char)ret;
@@ -199,6 +275,19 @@ namespace bear
 			}
 
 			dst = (char)ret;
+		}
+
+		static void store(unsigned short& dst, int tmp)
+		{
+			int ret = store_inner(tmp);
+
+			if ((unsigned int)ret > 0xffff)
+			{
+				if (ret > 0xffff) ret = 0xffff;
+				else ret = 0;
+			}
+
+			dst = (unsigned short)ret;
 		}
 
 		static void store(short& dst, int tmp)
@@ -222,36 +311,5 @@ namespace bear
 		}
 	};
 
-	template<unsigned int _Dim, typename _Dst, typename _Src>
-	inline void conv_1d_pad(_Dst&& _dst, _Src&& _src, size_t left, size_t right)
-	{
-		auto dst = to_base_ptr(to_ptr(_dst));
-		auto src = to_base_ptr(to_ptr(_src));
 
-		auto right_b = size_at<_Dim>(dst) - right;
-		auto dst_c = clip_at<_Dim>(dst, left, right_b);
-
-		if (dst_c.data() != src.data())
-		{
-			copy(dst_c, src);
-		}
-		else if (!is_same_size(dst_c, src))
-		{
-			throw bear_exception(exception_type::size_different, "wrong dst size!");
-		}
-
-		auto left_p = clip_at<_Dim>(dst, left, left + 1);
-
-		for (size_t i = 0; i < left; ++i)
-		{
-			copy(clip_at<_Dim>(dst, i, i + 1), left_p);
-		}
-
-		auto right_p = clip_at<_Dim>(dst, right_b - 1, right_b);
-
-		for (size_t i = 0; i < right; ++i)
-		{
-			copy(clip_at<_Dim>(dst, right_b + i, right_b + i + 1), right_p);
-		}
-	}
 }
