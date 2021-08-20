@@ -398,30 +398,33 @@ namespace bear
 			return *this;
 		}
 
-		image(const image& oth) :
-			_data(oth._data),
-			_ptr(
-				&_data[0],
-				oth.width() * sizeof(typename image_type::elm_type),
-				oth.width(),
-				oth.height())
-		{
+		image(const image& oth) = delete;
+		image& operator = (const image& oth) = delete;
 
-		}
+		//image(const image& oth) :
+		//	_data(oth._data),
+		//	_ptr(
+		//		&_data[0],
+		//		oth.width() * sizeof(typename image_type::elm_type),
+		//		oth.width(),
+		//		oth.height())
+		//{
 
-		image& operator = (const image& oth)
-		{
-			if (this == &oth) return *this;
+		//}
 
-			_data = oth._data;
-			_ptr = image_type(
-				&_data[0],
-				oth.width() * sizeof(typename image_type::elm_type),
-				oth.width(),
-				oth.height());
+		//image& operator = (const image& oth)
+		//{
+		//	if (this == &oth) return *this;
 
-			return *this;
-		}
+		//	_data = oth._data;
+		//	_ptr = image_type(
+		//		&_data[0],
+		//		oth.width() * sizeof(typename image_type::elm_type),
+		//		oth.width(),
+		//		oth.height());
+
+		//	return *this;
+		//}
 
 
 		image(data_type&& __data, image_type ptr) :
